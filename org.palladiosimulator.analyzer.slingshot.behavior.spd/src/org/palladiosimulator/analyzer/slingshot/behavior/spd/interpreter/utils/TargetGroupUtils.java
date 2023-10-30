@@ -9,6 +9,7 @@ import org.palladiosimulator.pcm.allocation.AllocationContext;
 import org.palladiosimulator.pcm.core.composition.AssemblyContext;
 import org.palladiosimulator.pcm.repository.OperationProvidedRole;
 import org.palladiosimulator.pcm.repository.OperationSignature;
+import org.palladiosimulator.pcm.resourceenvironment.LinkingResource;
 import org.palladiosimulator.pcm.resourceenvironment.ResourceContainer;
 import org.palladiosimulator.semanticspd.CompetingConsumersGroupCfg;
 import org.palladiosimulator.semanticspd.Configuration;
@@ -43,6 +44,21 @@ public class TargetGroupUtils {
 						  .getResourceContainer_ResourceEnvironment()
 						  .stream()
 						  .anyMatch(rc -> rc.getId().equals(container.getId()));
+	}
+	
+	public static boolean isLinkingResourceInInfrastructure(final LinkingResource linkingResource, final ElasticInfrastructure targetGroup) {
+		return targetGroup.getPCM_ResourceEnvironment()
+						  .getLinkingResources__ResourceEnvironment()
+						  .stream()
+						  .anyMatch(lr -> linkingResource.getId().equals(lr.getId()));
+	}
+	
+	public static boolean isLinkingResourceInTargetGroup(final LinkingResource linkingResource, final TargetGroup targetGroup) {
+		if (targetGroup instanceof final ElasticInfrastructure ei) {
+			return isLinkingResourceInInfrastructure(linkingResource, ei);
+		}
+		
+		return false;
 	}
 	
 	/**

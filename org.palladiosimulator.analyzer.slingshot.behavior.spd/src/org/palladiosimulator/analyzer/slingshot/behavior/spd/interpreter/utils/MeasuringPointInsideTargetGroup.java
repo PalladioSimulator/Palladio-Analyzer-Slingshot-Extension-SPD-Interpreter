@@ -3,6 +3,7 @@ package org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.utils;
 import org.eclipse.emf.ecore.EObject;
 import org.palladiosimulator.pcmmeasuringpoint.ActiveResourceMeasuringPoint;
 import org.palladiosimulator.pcmmeasuringpoint.AssemblyReference;
+import org.palladiosimulator.pcmmeasuringpoint.LinkingResourceMeasuringPoint;
 import org.palladiosimulator.pcmmeasuringpoint.OperationReference;
 import org.palladiosimulator.pcmmeasuringpoint.ResourceContainerMeasuringPoint;
 import org.palladiosimulator.pcmmeasuringpoint.ResourceEnvironmentMeasuringPoint;
@@ -59,5 +60,9 @@ public class MeasuringPointInsideTargetGroup extends PcmmeasuringpointSwitch<Boo
 		return false;
 	}
 
+	@Override
+	public Boolean caseLinkingResourceMeasuringPoint(LinkingResourceMeasuringPoint object) {
+		return TargetGroupUtils.isLinkingResourceInTargetGroup(object.getLinkingResource(), targetGroup);
+	}
 
 }

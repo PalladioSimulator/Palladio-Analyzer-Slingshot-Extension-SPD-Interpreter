@@ -3,6 +3,7 @@ package org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.data.SimulationTimeReached;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.ScalingTriggerInterpreter.InterpretationResult;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.trigger.CPUUtilizationTriggerChecker;
+import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.trigger.NetworkUtilizationTriggerChecker;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.trigger.OperationResponseTimeTriggerChecker;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.trigger.QueueLengthTriggerChecker;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.trigger.SimulationTimeChecker;
@@ -16,6 +17,7 @@ import org.palladiosimulator.spd.triggers.expectations.ExpectedPercentage;
 import org.palladiosimulator.spd.triggers.expectations.ExpectedTime;
 import org.palladiosimulator.spd.triggers.expectations.ExpectedValue;
 import org.palladiosimulator.spd.triggers.stimuli.CPUUtilization;
+import org.palladiosimulator.spd.triggers.stimuli.NetworkUtilization;
 import org.palladiosimulator.spd.triggers.stimuli.OperationResponseTime;
 import org.palladiosimulator.spd.triggers.stimuli.QueueLength;
 import org.palladiosimulator.spd.triggers.stimuli.SimulationTime;
@@ -74,6 +76,8 @@ final class StimuliInterpreter extends StimuliSwitch<InterpretationResult> {
 																   this.scalingTriggerInterpreter.policy.getTargetGroup())
 												   		  );
 	}
+	
+	
 
 	@Override
 	public InterpretationResult caseTaskCount(final TaskCount object) {
@@ -94,6 +98,22 @@ final class StimuliInterpreter extends StimuliSwitch<InterpretationResult> {
 		return (new InterpretationResult()).listenEvent(Subscriber.builder(MeasurementMade.class).name("queueLength"))
 				.triggerChecker(new QueueLengthTriggerChecker(this.trigger, object));
 	}
+	
+	@Override
+	public InterpretationResult caseNetworkUtilization(NetworkUtilization object) {
+		final ExpectedPercentage expectedPercentage = this.checkExpectedValue(ExpectedPercentage.class);
+		Preconditions.checkArgument(0 <= expectedPercentage.getValue() && expectedPercentage.getValue() <= 100, 
+									"The expected percentage must be between 0 and 100");
+		
+		
+		return (new InterpretationResult()).listenEvent(Subscriber.builder(MeasurementMade.class)
+																  .name("networkUtilizationMade"))
+										   .triggerChecker(new NetworkUtilizationTriggerChecker(
+												   				   this.trigger, 
+																   object, 
+																   this.scalingTriggerInterpreter.policy.getTargetGroup())
+												   		  );
+	}
 
 	@SuppressWarnings("unchecked")
 	private <T extends ExpectedValue> T checkExpectedValue(final Class<T> expectedType) {
@@ -106,4 +126,8 @@ final class StimuliInterpreter extends StimuliSwitch<InterpretationResult> {
 		
 		return (T) this.trigger.getExpectedValue();
 	}
+
+
+
+	
 }
