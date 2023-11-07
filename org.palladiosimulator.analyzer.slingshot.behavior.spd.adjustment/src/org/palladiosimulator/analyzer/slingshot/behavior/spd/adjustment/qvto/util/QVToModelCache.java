@@ -211,12 +211,6 @@ public class QVToModelCache {
     
     private void storeBlackboardModels() {
     	assert this.blackboard != null;
-    	
-    	final Set<String> partitions = new HashSet<>(blackboard.getPartitionIds());
-    	partitions.remove(ConstantsContainer.DEFAULT_PCM_INSTANCE_PARTITION_ID);
-    	partitions.forEach(this::storeModelFromBlackboardPartition);
-    	
-    	// We store the default partition last, to avoid conflicts with similar models.
     	storeModelFromBlackboardPartition(ConstantsContainer.DEFAULT_PCM_INSTANCE_PARTITION_ID);
     }
     
