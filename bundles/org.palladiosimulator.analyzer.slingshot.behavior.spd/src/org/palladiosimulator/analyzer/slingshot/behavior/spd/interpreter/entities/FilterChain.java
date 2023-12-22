@@ -113,13 +113,17 @@ public class FilterChain {
 			} catch (final Exception e) {
 				this.latestResult = FilterResult.disregard(e);
 			}
-			checkResult();
+			checkResult(this.latestResult);
 		} else {
 			this.iterator = null;
 		}
 	}
 
-	private void checkResult() {
+	/**
+	 * Either makes the {@link FilterChain} proceed to the next filter, or ends the
+	 * chain.
+	 */
+	public void checkResult(final FilterResult result) {
 		if (this.latestResult instanceof final FilterResult.Success success) {
 			this.next(success.nextEvent());
 		} else if (this.latestResult instanceof final FilterResult.Disregard disregard) {
