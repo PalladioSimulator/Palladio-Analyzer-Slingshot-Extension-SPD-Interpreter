@@ -36,7 +36,6 @@ import org.palladiosimulator.spd.triggers.ScalingTrigger;
  * @author Julijan Katic, Sarah Stieß
  */
 public final class SPDAdjustorContext {
-
 	private static final Logger LOGGER = Logger.getLogger(SPDAdjustorContext.class);
 
 	private final FilterChain filterChain;
