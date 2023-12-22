@@ -45,11 +45,9 @@ final class StimuliInterpreter extends StimuliSwitch<InterpretationResult> {
 
 		return (new InterpretationResult()).scheduleEvent(event)
 										   .listenEvent(Subscriber.builder(SimulationTimeReached.class)
-												   				  .name("something"))
+						.name("SimulationTimeReachedSubscriber"))
 										   .triggerChecker(new SimulationTimeChecker(this.trigger));
 	}
-
-
 
 	@Override
 	public InterpretationResult caseOperationResponseTime(final OperationResponseTime object) {
@@ -58,19 +56,19 @@ final class StimuliInterpreter extends StimuliSwitch<InterpretationResult> {
 																  .name("measurementMade"))
 									       .triggerChecker(new OperationResponseTimeTriggerChecker(this.trigger));
 	}
-	
+
 	@Override
 	public InterpretationResult caseCPUUtilization(final CPUUtilization object) {
 		final ExpectedPercentage expectedPercentage = this.checkExpectedValue(ExpectedPercentage.class);
-		Preconditions.checkArgument(0 <= expectedPercentage.getValue() && expectedPercentage.getValue() <= 100, 
+		Preconditions.checkArgument(0 <= expectedPercentage.getValue() && expectedPercentage.getValue() <= 100,
 									"The expected percentage must be between 0 and 100");
-		
-		
+
+
 		return (new InterpretationResult()).listenEvent(Subscriber.builder(MeasurementMade.class)
 																  .name("cpuUtilizationMade"))
 										   .triggerChecker(new CPUUtilizationTriggerChecker(
-												   				   this.trigger, 
-																   object, 
+												   				   this.trigger,
+																   object,
 																   this.scalingTriggerInterpreter.policy.getTargetGroup())
 												   		  );
 	}
@@ -78,7 +76,7 @@ final class StimuliInterpreter extends StimuliSwitch<InterpretationResult> {
 	@Override
 	public InterpretationResult caseTaskCount(final TaskCount object) {
 		this.checkExpectedValue(ExpectedCount.class);
-		
+
 		return (new InterpretationResult()).listenEvent(Subscriber.builder(MeasurementMade.class)
 																  .name("taskCount"))
 										   .triggerChecker(new TaskCountTriggerChecker(this.trigger, object, this.scalingTriggerInterpreter.policy.getTargetGroup()));
@@ -103,7 +101,7 @@ final class StimuliInterpreter extends StimuliSwitch<InterpretationResult> {
 					expectedType.getSimpleName(),
 					this.trigger.getExpectedValue().getClass().getSimpleName()));
 		}
-		
+
 		return (T) this.trigger.getExpectedValue();
 	}
 }
