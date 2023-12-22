@@ -7,32 +7,36 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import org.apache.log4j.Logger;
 import org.palladiosimulator.analyzer.slingshot.common.events.DESEvent;
 
 /**
- * A filter chain describes an ordered chain of {@link Filter}s through which an event
- * is passed and possibly manipulated or transformed. Each {@link Filter} will get
- * this chain passed as an argument, and a filter can decide to pass an event to the next
- * filter {@link #next(Object)} or to cancel {@link #disregard(String)}.
+ * A filter chain describes an ordered chain of {@link Filter}s through which an
+ * event is passed and possibly manipulated or transformed. Each {@link Filter}
+ * will get this chain passed as an argument, and a filter can decide to pass an
+ * event to the next filter {@link #next(Object)} or to cancel
+ * {@link #disregard(String)}.
  * <p>
- * If {@link #disregard(String)} is called, then the provided message will be delegated
- * to a given callback provided in the constructor.
+ * If {@link #disregard(String)} is called, then the provided message will be
+ * delegated to a given callback provided in the constructor.
  * <p>
- * New filters can be added with {@link #add(Filter)} and {@link #addAt(int, Filter)}.
- * Note that it is not possible to add new filter if it is currently in used (see {@link #filterIsBeingUsed()}).
+ * New filters can be added with {@link #add(Filter)} and
+ * {@link #addAt(int, Filter)}. Note that it is not possible to add new filter
+ * if it is currently in used (see {@link #filterIsBeingUsed()}).
  *
- * @author Julijan Katic
+ * @author Julijan Katic, Sarah Stieß
  *
  */
 public class FilterChain {
+	private static final Logger LOGGER = Logger.getLogger(FilterChain.class);
 
 	protected final List<Filter> filters = new ArrayList<>();
 	private final Consumer<Object> doOnDisregard;
 	private final SPDAdjustorState state;
-	
+
 	protected Iterator<Filter> iterator;
 	private FilterResult latestResult;
-	
+
 	/**
 	 * Constructs a new and empty filter chain. A non-null delegator
 	 * must be provided that will be called if any filter disregards.
@@ -104,6 +108,7 @@ public class FilterChain {
 		if (this.iterator.hasNext()) {
 			try {
 				final Filter filter = this.iterator.next();
+				LOGGER.debug("Next Filter : " + filter.getClass().getSimpleName());
 				this.latestResult = filter.doProcess(new FilterObjectWrapper(event, state));
 			} catch (final Exception e) {
 				this.latestResult = FilterResult.disregard(e);
@@ -113,7 +118,7 @@ public class FilterChain {
 			this.iterator = null;
 		}
 	}
-	
+
 	private void checkResult() {
 		if (this.latestResult instanceof final FilterResult.Success success) {
 			this.next(success.nextEvent());
@@ -121,7 +126,7 @@ public class FilterChain {
 			this.disregard(disregard.reason().toString());
 		}
 	}
-	
+
 	public FilterResult getLatestResult() {
 		return this.latestResult;
 	}
