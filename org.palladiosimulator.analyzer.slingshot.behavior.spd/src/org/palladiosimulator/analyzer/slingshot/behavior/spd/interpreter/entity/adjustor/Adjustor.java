@@ -33,6 +33,9 @@ public class Adjustor implements Filter {
 				objectWrapper.getEventToFilter().time());
 		objectWrapper.getState().incrementNumberScales();
 
+		
+		objectWrapper.getState().getTargetGroupState().addEnactedPolicy(currentSimTime, policy);
+		
 		Optional<CooldownConstraint> cooldownConstraint = policy.getPolicyConstraints().stream()
                 .filter(obj -> obj instanceof CooldownConstraint)
                 .map(obj -> (CooldownConstraint) obj).findAny();

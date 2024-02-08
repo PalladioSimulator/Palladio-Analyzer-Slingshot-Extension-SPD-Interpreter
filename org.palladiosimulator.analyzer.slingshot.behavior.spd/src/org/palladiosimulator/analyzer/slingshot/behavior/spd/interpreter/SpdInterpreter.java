@@ -2,15 +2,20 @@ package org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.apache.log4j.Logger;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.data.SpdBasedEvent;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entities.FilterChain;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entities.SPDAdjustorContext;
+import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entities.TargetGroupState;
 import org.palladiosimulator.analyzer.slingshot.common.events.DESEvent;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.Subscriber;
 import org.palladiosimulator.spd.SPD;
 import org.palladiosimulator.spd.ScalingPolicy;
+import org.palladiosimulator.spd.targets.TargetGroup;
 import org.palladiosimulator.spd.util.SpdSwitch;
 
 /**
@@ -22,17 +27,22 @@ import org.palladiosimulator.spd.util.SpdSwitch;
 class SpdInterpreter extends SpdSwitch<SpdInterpreter.InterpretationResult> {
 
 	private static final Logger LOGGER = Logger.getLogger(SpdInterpreter.class);
+	
+	private final Map<TargetGroup, TargetGroupState> targetGroupStates = new HashMap<>();
 
 	@Override
 	public InterpretationResult caseSPD(final SPD spd) {
 		LOGGER.debug("Interpreting SPD Model " + spd.getEntityName() + "[" + spd.getId() + "]");
 
+		
+		spd.getTargetGroups().stream().forEach(target -> targetGroupStates.put(target, new TargetGroupState(target)));
+		
 		return spd.getScalingPolicies().stream()
 									   .map(this::doSwitch)
 									   .reduce(InterpretationResult::add)
 									   .orElseGet(() -> InterpretationResult.EMPTY_RESULT);
 	}
-
+	
 	@Override
 	public InterpretationResult caseScalingPolicy(final ScalingPolicy policy) {
 		LOGGER.debug("Interpreting ScalingPolicy Model " + policy.getEntityName() + "[" + policy.getId() + "]");
@@ -43,7 +53,7 @@ class SpdInterpreter extends SpdSwitch<SpdInterpreter.InterpretationResult> {
 		
 		final ScalingTriggerInterpreter.InterpretationResult intrResult = (new ScalingTriggerInterpreter(policy)).doSwitch(policy.getScalingTrigger());
 		return (new InterpretationResult())
-				.adjustorContext(new SPDAdjustorContext(policy, intrResult.getTriggerChecker(), intrResult.getEventsToListen()))
+				.adjustorContext(new SPDAdjustorContext(policy, intrResult.getTriggerChecker(), intrResult.getEventsToListen(), targetGroupStates.get(policy.getTargetGroup())))
 				.eventsToSchedule(intrResult.getEventsToSchedule());
 	}
 
