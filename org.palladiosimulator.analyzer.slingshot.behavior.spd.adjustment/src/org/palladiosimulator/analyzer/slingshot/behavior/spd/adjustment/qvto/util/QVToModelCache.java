@@ -1,8 +1,5 @@
 package org.palladiosimulator.analyzer.slingshot.behavior.spd.adjustment.qvto.util;
 
-import de.uka.ipd.sdq.workflow.mdsd.blackboard.MDSDBlackboard;
-import de.uka.ipd.sdq.workflow.mdsd.blackboard.ResourceSetPartition;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -11,6 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
@@ -19,8 +17,14 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreSwitch;
+import org.eclipse.gmf.runtime.notation.NotationPackage;
+import org.modelversioning.emfprofile.EMFProfilePackage;
+import org.modelversioning.emfprofileapplication.EMFProfileApplicationPackage;
 import org.palladiosimulator.analyzer.workflow.ConstantsContainer;
 import org.palladiosimulator.analyzer.workflow.jobs.LoadSharedPCMLibrariesIntoBlackboard;
+
+import de.uka.ipd.sdq.workflow.mdsd.blackboard.MDSDBlackboard;
+import de.uka.ipd.sdq.workflow.mdsd.blackboard.ResourceSetPartition;
 
 /**
  * This cache implementation is used to store models (e.g., PCM models or runtime measurement
@@ -36,7 +40,9 @@ public class QVToModelCache {
 	
 	// Put (statically) EClass objects of blackboard models that are not intended to be
 	// transformation parameters here
-	private static final EClass[] MODEL_ECLASS_BLACKLIST = { };
+	private static final EClass[] MODEL_ECLASS_BLACKLIST = {
+			EMFProfileApplicationPackage.eINSTANCE.getProfileApplication(), EMFProfilePackage.eINSTANCE.getProfile(),
+			NotationPackage.eINSTANCE.getDiagram() };
 	
 	// switch to determine the meta-model/EPackage of a model
 	private static final EcoreSwitch<EPackage> MODELTYPE_RETRIEVER = new EcoreSwitch<EPackage>() {
@@ -117,10 +123,11 @@ public class QVToModelCache {
 	public final void storeModelFromBlackboardPartition(final String partitionId) {
 		if (blackboard.hasPartition(Objects.requireNonNull(partitionId))) {
 			final ResourceSetPartition partition = blackboard.getPartition(partitionId);
+
 			partition.getResourceSet().getResources().stream()
 												     .map(Resource::getContents)
-												     .filter(contents -> !contents.isEmpty() && !isBlacklisted(contents.get(0)))
-												     .forEach(contents -> storeModel(contents.get(0)));
+					.flatMap(contents -> contents.stream()).filter(Predicate.not(QVToModelCache::isBlacklisted))
+					.forEach(this::storeModel);
 		}
 	}
 	
