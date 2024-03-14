@@ -11,7 +11,7 @@ import org.palladiosimulator.analyzer.slingshot.monitor.data.events.MeasurementM
 import org.palladiosimulator.edp2.models.measuringpoint.MeasuringPoint;
 import org.palladiosimulator.metricspec.constants.MetricDescriptionConstants;
 import org.palladiosimulator.pcmmeasuringpoint.PassiveResourceReference;
-import org.palladiosimulator.spd.triggers.SimpleFireOnValue;
+import org.palladiosimulator.spd.triggers.BaseTrigger;
 import org.palladiosimulator.spd.triggers.expectations.ExpectedCount;
 import org.palladiosimulator.spd.triggers.stimuli.QueueLength;
 
@@ -29,7 +29,7 @@ public class QueueLengthTriggerChecker extends TriggerChecker<QueueLength> {
 
 	private final QueueLength queueLength;
 
-	public QueueLengthTriggerChecker(final SimpleFireOnValue trigger, final QueueLength queueLength) {
+	public QueueLengthTriggerChecker(final BaseTrigger trigger, final QueueLength queueLength) {
 		super(trigger, QueueLength.class, Set.of(ExpectedCount.class));
 		this.queueLength = queueLength;
 	}
