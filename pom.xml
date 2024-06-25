@@ -2,9 +2,9 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.palladiosimulator.analyzer.slingshot</groupId>
-    <artifactId>slingshot_e2e</artifactId>
+    <artifactId>default-extensions</artifactId>
     <version>0.0.2-SNAPSHOT</version>
-    <relativePath>../Palladio-Analyzer-Slingshot-E2E-Tests/pom.xml</relativePath>
+    <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>behaviour</artifactId>
   <packaging>pom</packaging>
