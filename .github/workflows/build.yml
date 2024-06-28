@@ -17,6 +17,6 @@ jobs:
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.E2E_PTA }}
-          repository: 'PalladioSimulator/Palladio-Analyzer-Slingshot-E2E-Tests'
+          repository: 'PalladioSimulator/Palladio-Analyzer-Slingshot-Default-Extensions'
           event-type: 'build-trigger'
           client-payload: '{"slingshot_extension_spd_interpreter_branch": "${{ env.BRANCH_NAME }}"}'
