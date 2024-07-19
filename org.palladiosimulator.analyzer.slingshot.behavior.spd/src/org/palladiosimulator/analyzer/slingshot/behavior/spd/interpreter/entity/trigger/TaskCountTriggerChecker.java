@@ -8,13 +8,13 @@ import javax.measure.quantity.Dimensionless;
 import org.palladiosimulator.analyzer.slingshot.monitor.data.entities.SlingshotMeasuringValue;
 import org.palladiosimulator.metricspec.constants.MetricDescriptionConstants;
 import org.palladiosimulator.spd.targets.TargetGroup;
-import org.palladiosimulator.spd.triggers.SimpleFireOnValue;
+import org.palladiosimulator.spd.triggers.BaseTrigger;
 import org.palladiosimulator.spd.triggers.expectations.ExpectedCount;
 import org.palladiosimulator.spd.triggers.stimuli.TaskCount;
 
 public class TaskCountTriggerChecker extends AbstractManagedElementTriggerChecker<TaskCount> {
 
-	public TaskCountTriggerChecker(final SimpleFireOnValue trigger, final TaskCount stimulus, final TargetGroup targetGroup) {
+	public TaskCountTriggerChecker(final BaseTrigger trigger, final TaskCount stimulus, final TargetGroup targetGroup) {
 		super(trigger, 
 				stimulus,
 				targetGroup, 

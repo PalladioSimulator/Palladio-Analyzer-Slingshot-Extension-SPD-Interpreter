@@ -4,13 +4,13 @@ import java.util.Set;
 
 import org.palladiosimulator.metricspec.constants.MetricDescriptionConstants;
 import org.palladiosimulator.spd.targets.TargetGroup;
-import org.palladiosimulator.spd.triggers.SimpleFireOnValue;
+import org.palladiosimulator.spd.triggers.BaseTrigger;
 import org.palladiosimulator.spd.triggers.expectations.ExpectedPercentage;
 import org.palladiosimulator.spd.triggers.stimuli.CPUUtilization;
 
 public class CPUUtilizationTriggerChecker extends AbstractManagedElementTriggerChecker<CPUUtilization> {
 
-	public CPUUtilizationTriggerChecker(final SimpleFireOnValue trigger,
+	public CPUUtilizationTriggerChecker(final BaseTrigger trigger,
 										final CPUUtilization stimulus,
 								 		final TargetGroup targetGroup) {
 		super(trigger, 
