@@ -14,3 +14,4 @@ Require-Bundle: org.palladiosimulator.analyzer.slingshot.core;bundle-version="1.
  org.palladiosimulator.analyzer.slingshot.workflow.events;bundle-version="1.0.0",
  org.palladiosimulator.pcm.edp2.measuringpoint,
  org.palladiosimulator.spd.semantic
+Export-Package: org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entities

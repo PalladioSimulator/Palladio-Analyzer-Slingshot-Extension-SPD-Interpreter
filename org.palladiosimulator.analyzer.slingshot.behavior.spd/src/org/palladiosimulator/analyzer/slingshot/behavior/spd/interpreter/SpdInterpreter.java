@@ -5,8 +5,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.palladiosimulator.analyzer.slingshot.behavior.spd.data.SPDAdjustorStateExported;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.data.SpdBasedEvent;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entities.FilterChain;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entities.SPDAdjustorContext;
@@ -38,9 +40,9 @@ class SpdInterpreter extends SpdSwitch<SpdInterpreter.InterpretationResult> {
 		spd.getTargetGroups().stream().forEach(target -> targetGroupStates.put(target, new TargetGroupState(target)));
 
 		return spd.getScalingPolicies().stream()
-									   .map(this::doSwitch)
-									   .reduce(InterpretationResult::add)
-									   .orElseGet(() -> InterpretationResult.EMPTY_RESULT);
+				.map(this::doSwitch)
+				.reduce(InterpretationResult::add)
+				.orElseGet(() -> InterpretationResult.EMPTY_RESULT);
 	}
 
 	@Override
@@ -52,9 +54,14 @@ class SpdInterpreter extends SpdSwitch<SpdInterpreter.InterpretationResult> {
 		}
 
 		final ScalingTriggerInterpreter.InterpretationResult intrResult = (new ScalingTriggerInterpreter(policy)).doSwitch(policy.getScalingTrigger());
+
+		final SPDAdjustorContext context = new SPDAdjustorContext(policy, intrResult.getTriggerChecker(),
+				intrResult.getEventsToListen(), targetGroupStates.get(policy.getTargetGroup()));
+
 		return (new InterpretationResult())
-				.adjustorContext(new SPDAdjustorContext(policy, intrResult.getTriggerChecker(), intrResult.getEventsToListen(), targetGroupStates.get(policy.getTargetGroup())))
-				.eventsToSchedule(intrResult.getEventsToSchedule());
+				.adjustorContext(context)
+				.eventsToSchedule(intrResult.getEventsToSchedule())
+				.eventsToSchedule(Set.of(new SPDAdjustorStateExported(context.getState())));
 	}
 
 	/**
@@ -77,8 +84,8 @@ class SpdInterpreter extends SpdSwitch<SpdInterpreter.InterpretationResult> {
 		}
 
 		InterpretationResult(final List<SPDAdjustorContext> adjustorContexts,
-							 final List<SpdBasedEvent> eventsToSchedule,
-							 final List<Subscriber<? extends DESEvent>> subscribers) {
+				final List<SpdBasedEvent> eventsToSchedule,
+				final List<Subscriber<? extends DESEvent>> subscribers) {
 			this.adjustorContexts = new ArrayList<>(adjustorContexts);
 			this.eventsToSchedule = new ArrayList<>(eventsToSchedule);
 			this.subscribers = new ArrayList<>(subscribers);

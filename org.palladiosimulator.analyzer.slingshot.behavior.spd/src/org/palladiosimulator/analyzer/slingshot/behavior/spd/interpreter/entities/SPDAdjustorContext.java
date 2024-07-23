@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
+import org.palladiosimulator.analyzer.slingshot.behavior.spd.data.SPDAdjustorStateInitialized;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.adjustor.Adjustor;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.constraint.AbstractConstraintFilter;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.targetgroup.TargetGroupChecker;
@@ -47,6 +48,10 @@ public final class SPDAdjustorContext {
 				.map(builder -> builder.handler(publisher))
 				.map(builder -> builder.build())
 				.collect(Collectors.toList());
+
+		this.associatedHandlers.add(Subscriber.builder(SPDAdjustorStateInitialized.class)
+				.name("StateInitializationHandler")
+				.handler(new StateInitializationHandler()).build());
 	}
 
 
@@ -66,7 +71,7 @@ public final class SPDAdjustorContext {
 
 
 		scalingPolicy.getTargetGroup().getTargetConstraints().stream().filter(constraint -> constraint instanceof final ThrashingConstraint thrashingConstraint).map(constraint -> (ThrashingConstraint) constraint).forEach(constraint ->
-				this.filterChain.add(AbstractConstraintFilter.createAbstractConstraintFilter(constraint)));
+		this.filterChain.add(AbstractConstraintFilter.createAbstractConstraintFilter(constraint)));
 
 		scalingPolicy.getPolicyConstraints().forEach(constraint ->
 		this.filterChain.add(AbstractConstraintFilter.createAbstractConstraintFilter(constraint))
@@ -78,6 +83,15 @@ public final class SPDAdjustorContext {
 
 	public FilterChain getFilterChain() {
 		return filterChain;
+	}
+
+	/**
+	 * For State Exploration only.
+	 *
+	 * @return the state.
+	 */
+	public SPDAdjustorState getState() {
+		return state;
 	}
 
 	public ScalingPolicy getScalingPolicy() {
@@ -127,6 +141,34 @@ public final class SPDAdjustorContext {
 			} else {
 				return Result.empty();
 			}
+		}
+
+	}
+
+	/**
+	 * Initialize the {@code state} of this adjustor context according to values
+	 * provided by the {@link SPDAdjustorStateInitialized} event.
+	 *
+	 * This subscriber is not part of the filter chain.
+	 */
+	private class StateInitializationHandler implements EventHandler<SPDAdjustorStateInitialized> {
+
+		@Override
+		public Result<?> acceptEvent(final SPDAdjustorStateInitialized event) throws Exception {
+
+			if (!event.getStateValues().scalingPolicyId().equals(state.getScalingPolicy().getId())) {
+				return Result.empty();
+			}
+
+			state.setCoolDownEnd(event.getStateValues().coolDownEnd());
+			state.setLatestAdjustmentAtSimulationTime(event.getStateValues().latestAdjustmentAtSimulationTime());
+			state.setNumberOfScalesInCooldown(event.getStateValues().numberOfScalesInCooldown());
+
+			while (state.numberOfScales() < event.getStateValues().numberScales()) {
+				state.incrementNumberScales();
+			}
+
+			return Result.empty();
 		}
 
 	}
