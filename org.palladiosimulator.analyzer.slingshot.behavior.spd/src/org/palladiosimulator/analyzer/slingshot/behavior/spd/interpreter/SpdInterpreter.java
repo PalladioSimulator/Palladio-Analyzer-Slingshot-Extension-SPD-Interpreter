@@ -38,9 +38,9 @@ class SpdInterpreter extends SpdSwitch<SpdInterpreter.InterpretationResult> {
 		spd.getTargetGroups().stream().forEach(target -> targetGroupStates.put(target, new TargetGroupState(target)));
 
 		return spd.getScalingPolicies().stream()
-				.map(this::doSwitch)
-				.reduce(InterpretationResult::add)
-				.orElseGet(() -> InterpretationResult.EMPTY_RESULT);
+									   .map(this::doSwitch)
+									   .reduce(InterpretationResult::add)
+									   .orElseGet(() -> InterpretationResult.EMPTY_RESULT);
 	}
 
 	@Override
@@ -52,10 +52,8 @@ class SpdInterpreter extends SpdSwitch<SpdInterpreter.InterpretationResult> {
 		}
 
 		final ScalingTriggerInterpreter.InterpretationResult intrResult = (new ScalingTriggerInterpreter(policy)).doSwitch(policy.getScalingTrigger());
-
 		return (new InterpretationResult())
-				.adjustorContext(new SPDAdjustorContext(policy, intrResult.getTriggerChecker(),
-						intrResult.getEventsToListen(), targetGroupStates.get(policy.getTargetGroup())))
+				.adjustorContext(new SPDAdjustorContext(policy, intrResult.getTriggerChecker(), intrResult.getEventsToListen(), targetGroupStates.get(policy.getTargetGroup())))
 				.eventsToSchedule(intrResult.getEventsToSchedule());
 	}
 
@@ -79,8 +77,8 @@ class SpdInterpreter extends SpdSwitch<SpdInterpreter.InterpretationResult> {
 		}
 
 		InterpretationResult(final List<SPDAdjustorContext> adjustorContexts,
-				final List<SpdBasedEvent> eventsToSchedule,
-				final List<Subscriber<? extends DESEvent>> subscribers) {
+							 final List<SpdBasedEvent> eventsToSchedule,
+							 final List<Subscriber<? extends DESEvent>> subscribers) {
 			this.adjustorContexts = new ArrayList<>(adjustorContexts);
 			this.eventsToSchedule = new ArrayList<>(eventsToSchedule);
 			this.subscribers = new ArrayList<>(subscribers);
