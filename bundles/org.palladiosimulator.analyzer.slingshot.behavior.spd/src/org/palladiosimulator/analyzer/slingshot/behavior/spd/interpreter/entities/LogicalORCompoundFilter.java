@@ -28,10 +28,10 @@ public class LogicalORCompoundFilter extends ComboundFilter {
 	}
 
 	@Override
-	public void checkResult(final FilterResult result) {
-		if (result instanceof final FilterResult.Success success) {
+	public void checkResult() {
+		if (this.getLatestResult() instanceof final FilterResult.Success success) {
 			return; // short circuit
-		} else if (result instanceof final FilterResult.Disregard disregard) {
+		} else if (this.getLatestResult() instanceof final FilterResult.Disregard disregard) {
 			this.disregard(disregard.reason().toString());
 		}
 	}

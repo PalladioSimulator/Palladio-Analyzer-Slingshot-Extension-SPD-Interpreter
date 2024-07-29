@@ -108,12 +108,11 @@ public class FilterChain {
 		if (this.iterator.hasNext()) {
 			try {
 				final Filter filter = this.iterator.next();
-				LOGGER.debug("Next Filter : " + filter.getClass().getSimpleName());
 				this.latestResult = filter.doProcess(new FilterObjectWrapper(event, state));
 			} catch (final Exception e) {
 				this.latestResult = FilterResult.disregard(e);
 			}
-			checkResult(this.latestResult);
+			checkResult();
 		} else {
 			this.iterator = null;
 		}
@@ -123,7 +122,7 @@ public class FilterChain {
 	 * Either makes the {@link FilterChain} proceed to the next filter, or ends the
 	 * chain.
 	 */
-	public void checkResult(final FilterResult result) {
+	public void checkResult() {
 		if (this.latestResult instanceof final FilterResult.Success success) {
 			this.next(success.nextEvent());
 		} else if (this.latestResult instanceof final FilterResult.Disregard disregard) {
