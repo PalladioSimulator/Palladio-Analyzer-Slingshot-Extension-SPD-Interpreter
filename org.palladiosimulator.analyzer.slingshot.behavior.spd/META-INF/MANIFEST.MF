@@ -7,15 +7,10 @@ Automatic-Module-Name: org.palladiosimulator.analyzer.slingshot.behavior.spd
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: org.palladiosimulator.analyzer.slingshot.core;bundle-version="1.0.0",
  org.palladiosimulator.analyzer.slingshot.monitor.data;bundle-version="1.0.0",
- org.palladiosimulator.spd;bundle-version="1.0.0",
- org.apache.log4j;bundle-version="1.2.15",
  org.palladiosimulator.analyzer.slingshot.behavior.spd.data,
  de.uka.ipd.sdq.workflow.mdsd.blackboard;bundle-version="5.1.0",
  org.palladiosimulator.analyzer.workflow;bundle-version="5.1.0",
  org.palladiosimulator.analyzer.slingshot.ui.events;bundle-version="1.0.0",
  org.palladiosimulator.analyzer.slingshot.workflow.events;bundle-version="1.0.0",
- org.palladiosimulator.edp2,
  org.palladiosimulator.pcm.edp2.measuringpoint,
- org.jscience,
- org.palladiosimulator.metricspec,
  org.palladiosimulator.spd.semantic

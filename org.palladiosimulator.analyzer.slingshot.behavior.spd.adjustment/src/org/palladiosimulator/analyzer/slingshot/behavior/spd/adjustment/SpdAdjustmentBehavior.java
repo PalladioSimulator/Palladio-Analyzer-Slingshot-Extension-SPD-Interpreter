@@ -126,26 +126,52 @@ public class SpdAdjustmentBehavior implements SimulationBehaviorExtension {
 
 	}
 
+	/**
+	 * Create new monitors for all new containers created by the reconfiguration
+	 * transformation.
+	 *
+	 * The news monitors match the monitors defined for the original container.
+	 *
+	 * @param newContainers  containers created by the reconfiguration
+	 *                       transformation
+	 * @param simulationTime time of the reconfiguration
+	 * @return List of newly created monitors for all resource containers in
+	 *         {@code newContainers}.
+	 */
 	private List<MonitorChange> createMonitors(final List<ResourceContainer> newContainers, final double simulationTime) {
-		final ResourceContainer unitContainer = getUnitContainer();
-		if (unitContainer != null && !newContainers.isEmpty()) {
-			final ResourceContainerMonitorCloner cloner = new ResourceContainerMonitorCloner(this.monitorRepository,
-					monitorRepository.getMonitors().get(0).getMeasuringPoint().getMeasuringPointRepository(),
-					unitContainer);
-
-			return newContainers.stream()
-						.flatMap(container -> cloner.createMonitorsForResourceContainer(container).stream())
-						.map(newMonitor -> new MonitorChange(newMonitor, null, simulationTime))
-						.toList();
+		if (newContainers.isEmpty() || this.getUnitContainer(newContainers.get(0)) == null) {
+			return Collections.emptyList();
 		}
 
-		return Collections.emptyList();
+		final ResourceContainer unitContainer = getUnitContainer(newContainers.get(0));
+
+		final ResourceContainerMonitorCloner cloner = new ResourceContainerMonitorCloner(this.monitorRepository,
+				monitorRepository.getMonitors().get(0).getMeasuringPoint().getMeasuringPointRepository(),
+				unitContainer);
+
+		return newContainers.stream()
+				.flatMap(container -> cloner.createMonitorsForResourceContainer(container).stream())
+				.map(newMonitor -> new MonitorChange(newMonitor, null, simulationTime))
+				.toList();
 	}
 
-	private ResourceContainer getUnitContainer() {
+	/**
+	 * Get the resource container which {@code referenceContainer} is a replica of.
+	 *
+	 * I.e. get the {@code unit} of of the {@link ElasticInfrastructureCfg} that has
+	 * {@code referenceContainer} in its elements.
+	 *
+	 * @param referenceContainer a replicated resource container, must not be null.
+	 * @return Unit resource container which {@code referenceContainer} is a replica
+	 *         of.
+	 */
+	private ResourceContainer getUnitContainer(final ResourceContainer referenceContainer) {
+		assert referenceContainer != null : "Reference Container is null but must not be null.";
+
 		return this.semanticConfiguration.getTargetCfgs().stream()
 				.filter(ElasticInfrastructureCfg.class::isInstance)
 				.map(ElasticInfrastructureCfg.class::cast)
+				.filter(eicfg -> eicfg.getElements().contains(referenceContainer))
 				.map(el -> el.getUnit())
 				.findAny()
 				.orElse(null);

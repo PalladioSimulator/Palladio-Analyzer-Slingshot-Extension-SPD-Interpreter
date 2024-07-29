@@ -4,10 +4,13 @@ import java.util.Set;
 
 import javax.measure.Measure;
 import javax.measure.quantity.Dimensionless;
+import javax.measure.quantity.Duration;
 
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entities.FilterObjectWrapper;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entities.FilterResult;
-import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.aggregator.FixedLengthWindowAggregation;
+import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.aggregator.FixedLengthWindowSimpleAggregation;
+import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.aggregator.SlidingTimeWindowAggregationBasedOnEMA;
+import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.aggregator.WindowAggregation;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.targetgroup.TargetGroupChecker;
 import org.palladiosimulator.analyzer.slingshot.common.events.DESEvent;
 import org.palladiosimulator.analyzer.slingshot.monitor.data.entities.SlingshotMeasuringValue;
@@ -15,7 +18,9 @@ import org.palladiosimulator.analyzer.slingshot.monitor.data.events.MeasurementM
 import org.palladiosimulator.edp2.models.measuringpoint.MeasuringPoint;
 import org.palladiosimulator.metricspec.BaseMetricDescription;
 import org.palladiosimulator.metricspec.MetricSetDescription;
+import org.palladiosimulator.metricspec.constants.MetricDescriptionConstants;
 import org.palladiosimulator.spd.targets.TargetGroup;
+import org.palladiosimulator.spd.triggers.AGGREGATIONMETHOD;
 import org.palladiosimulator.spd.triggers.BaseTrigger;
 import org.palladiosimulator.spd.triggers.expectations.ExpectedPrimitive;
 import org.palladiosimulator.spd.triggers.stimuli.ManagedElementsStateStimulus;
@@ -43,7 +48,7 @@ public abstract class AbstractManagedElementTriggerChecker<T extends ManagedElem
 	protected final T managedElementsStateStimulus;
 	protected final MetricSetDescription metricSetDescription;
 	protected final BaseMetricDescription baseMetricDescription;
-	protected final FixedLengthWindowAggregation aggregator;
+	protected final WindowAggregation aggregator;
 	
 	@SuppressWarnings("unchecked")
 	public AbstractManagedElementTriggerChecker(final BaseTrigger trigger, 
@@ -58,7 +63,13 @@ public abstract class AbstractManagedElementTriggerChecker<T extends ManagedElem
 		this.managedElementsStateStimulus = stimulus;
 		this.metricSetDescription = metricSetDescription;
 		this.baseMetricDescription = baseMetricDescription;
-		this.aggregator = FixedLengthWindowAggregation.getFromAggregationMethod(stimulus.getAggregationOverElements());
+		
+		if(stimulus.getAggregationOverElements().equals(AGGREGATIONMETHOD.AVERAGE)) {
+		    this.aggregator = new SlidingTimeWindowAggregationBasedOnEMA(60,10,0.2);		    
+		}else {
+		    this.aggregator = FixedLengthWindowSimpleAggregation.getFromAggregationMethod(stimulus.getAggregationOverElements());
+		}
+		
 	}
 
 	@Override
@@ -80,7 +91,7 @@ public abstract class AbstractManagedElementTriggerChecker<T extends ManagedElem
 		}
 
 
-		return FilterResult.disregard("");
+		return FilterResult.disregard("Not a measurement made event.");
 	}
 
 	/**
@@ -90,15 +101,15 @@ public abstract class AbstractManagedElementTriggerChecker<T extends ManagedElem
 	 * disregard.
 	 */
 	protected FilterResult getResult(final DESEvent event) {
-		if (!this.aggregator.isWindowFull()) {
-			return FilterResult.disregard("There are not enough values yet to aggregate.");
+		if (!this.aggregator.isEmittable()) {
+			return FilterResult.disregard("Values not emittable.");
 		}
 		
 		final double aggregatedValue = this.aggregator.getCurrentValue();
 		if (this.compareToTrigger(aggregatedValue) == ComparatorResult.IN_ACCORDANCE) {
 			return FilterResult.success(event);
 		}
-		return FilterResult.disregard();
+		return FilterResult.disregard("Value and Expectation not in accordance.");
 	}
 
 	/**
@@ -107,8 +118,14 @@ public abstract class AbstractManagedElementTriggerChecker<T extends ManagedElem
 	 */
 	protected void aggregateMeasurement(final MeasurementMade measurementMade) {
 		if (measurementMade.getEntity().getMetricDesciption().getId().equals(this.metricSetDescription.getId())) {
-			aggregator.aggregate(this.getValueForAggregation(measurementMade.getEntity()));
+			aggregator.aggregate(getPointInTime(measurementMade.getEntity()),getValueForAggregation(measurementMade.getEntity()));
 		}
+	}
+	
+	protected double getPointInTime(final SlingshotMeasuringValue smv) {
+		final Measure<Double, Duration>  pointInTime = smv.getMeasureForMetric(MetricDescriptionConstants.POINT_IN_TIME_METRIC);
+		final double value = pointInTime.getValue();
+		return value;		
 	}
 	
 	protected double getValueForAggregation(final SlingshotMeasuringValue smv) {
