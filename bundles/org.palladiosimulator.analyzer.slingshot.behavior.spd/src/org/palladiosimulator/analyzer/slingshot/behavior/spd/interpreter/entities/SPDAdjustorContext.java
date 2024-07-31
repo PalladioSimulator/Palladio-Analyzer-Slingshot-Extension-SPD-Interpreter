@@ -1,7 +1,9 @@
 package org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entities;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
@@ -15,15 +17,31 @@ import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.Subscriber;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.returntypes.Result;
 import org.palladiosimulator.spd.ScalingPolicy;
 import org.palladiosimulator.spd.constraints.target.ThrashingConstraint;
+import org.palladiosimulator.spd.triggers.BaseTrigger;
+import org.palladiosimulator.spd.triggers.ComposedTrigger;
 import org.palladiosimulator.spd.triggers.ScalingTrigger;
 
+/**
+ *
+ * For each {@code SPDAdjustorContext} there must be at most one Subscriber per
+ * EventType.
+ *
+ * This is mostly relevant for {@link ComposedTrigger}s. For
+ * {@link BaseTrigger}, it is not relevant, there is always only one Subscriber
+ * for those. However a {@link ComposedTrigger} may consist of multiple triggers
+ * with the same stimulus type, which results in multiple subscribers for one
+ * type of event, which results in the FilterChain being triggered more often
+ * than it should.
+ *
+ * @author Julijan Katic, Sarah Stieß
+ */
 public final class SPDAdjustorContext {
 
 	private static final Logger LOGGER = Logger.getLogger(SPDAdjustorContext.class);
 
 	private final FilterChain filterChain;
 	private final ScalingPolicy scalingPolicy;
-	private final List<Subscriber<? extends DESEvent>> associatedHandlers;
+	private final Set<Subscriber<? extends DESEvent>> associatedHandlers;
 
 	private SPDAdjustorState state;
 	private final SPDAdjustorState previousState;
@@ -46,7 +64,7 @@ public final class SPDAdjustorContext {
 		this.associatedHandlers = associatedHandlers.stream()
 				.map(builder -> builder.handler(publisher))
 				.map(builder -> builder.build())
-				.collect(Collectors.toList());
+				.collect(Collectors.toSet());
 	}
 
 
@@ -84,7 +102,7 @@ public final class SPDAdjustorContext {
 		return scalingPolicy;
 	}
 
-	public List<Subscriber<? extends DESEvent>> getAssociatedHandlers() {
+	public Collection<Subscriber<? extends DESEvent>> getAssociatedHandlers() {
 		return associatedHandlers;
 	}
 
