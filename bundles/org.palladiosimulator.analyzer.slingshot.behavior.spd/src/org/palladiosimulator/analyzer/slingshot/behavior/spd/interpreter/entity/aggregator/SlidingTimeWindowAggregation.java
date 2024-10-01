@@ -9,6 +9,7 @@ import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.aggregator.functions.MeanAggregation;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.aggregator.functions.MedianAggregation;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.aggregator.functions.MinAggregation;
+import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.aggregator.functions.PercentileAggregation;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.aggregator.functions.RateOfChangeAggregation;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.aggregator.functions.SumAggregation;
 import org.palladiosimulator.spd.triggers.AGGREGATIONMETHOD;
@@ -64,6 +65,8 @@ public class SlidingTimeWindowAggregation extends AbstractWindowAggregation {
         case SUM -> new SlidingTimeWindowAggregation(winSizeSeconds, noEmitDuration, new SumAggregation());
         case RATEOFCHANGE -> new SlidingTimeWindowAggregation(winSizeSeconds, noEmitDuration,
                 new RateOfChangeAggregation());
+        case PERCENTILE95 -> new SlidingTimeWindowAggregation(winSizeSeconds, noEmitDuration,
+                new PercentileAggregation(0.95));
         default -> throw new IllegalArgumentException("Unexpected value: " + aggregationMethod);
         };
     }

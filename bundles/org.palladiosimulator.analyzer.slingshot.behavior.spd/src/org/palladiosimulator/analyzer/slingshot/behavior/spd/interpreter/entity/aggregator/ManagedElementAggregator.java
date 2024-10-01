@@ -21,11 +21,11 @@ import org.palladiosimulator.spd.triggers.stimuli.TaskCount;
  * elements. Measurements for this elements need to be aggregated first, which is done by
  * {@link #aggregateMeasurement(MeasurementMade)}. Afterwards, {@link #getResult()} checks whether
  * enough measurements were made, and which value is aggregated.
- * 
+ *
  * The precondition is that the measuring point, where the measurements are coming from, are inside
  * the target group. This is done in the {@link TargetGroupChecker} filter, that should be placed
  * before this filter.
- * 
+ *
  * @author Jens Berberich, based on work by Julijan Katic
  *
  * @param <T>
@@ -33,7 +33,7 @@ import org.palladiosimulator.spd.triggers.stimuli.TaskCount;
  */
 public class ManagedElementAggregator<T extends ManagedElementsStateStimulus> extends ModelAggregatorWrapper<T> {
     protected final WindowAggregation aggregator;
-    private T stimulus;
+    private final T stimulus;
 
     public ManagedElementAggregator(final T stimulus, final double windowSize) {
         this.stimulus = stimulus;
@@ -70,10 +70,11 @@ public class ManagedElementAggregator<T extends ManagedElementsStateStimulus> ex
      * Helper method to retrieve the filter result. If the aggregated value is in accordance with
      * the specified trigger, success is returned. If not all measurements were made yet, or if the
      * value was not in accordance, then disregard.
-     * 
+     *
      * @throws Exception
      *             if {@link #aggregator} cannot currently emit a value
      */
+    @Override
     public double getResult() throws NotEmittableException {
         if (!this.aggregator.isEmittable()) {
             throw new NotEmittableException("Values for Aggregator of " + this.stimulus.getClass()
@@ -86,13 +87,14 @@ public class ManagedElementAggregator<T extends ManagedElementsStateStimulus> ex
      * Helper method to aggregate the measurement in case if the measurement comes from one of the
      * resource containers in the target group.
      */
+    @Override
     public void aggregateMeasurement(final MeasurementMade measurementMade) {
         if (measurementMade.getEntity()
             .getMetricDesciption()
             .getId()
             .equals(this.metricSetDescription.getId())) {
-            aggregator.aggregate(getPointInTime(measurementMade.getEntity()),
-                    getValueForAggregation(measurementMade.getEntity()));
+            this.aggregator.aggregate(this.getPointInTime(measurementMade.getEntity()),
+                    this.getValueForAggregation(measurementMade.getEntity()));
         }
     }
 
