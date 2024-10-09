@@ -108,7 +108,7 @@ public final class SPDAdjustorContext {
 
 	private void doOnDisregard(final Object reason) {
 		this.state = previousState;
-		LOGGER.info("Filter was not successful: " + reason.toString());
+		LOGGER.debug("Filter was not successful: " + reason.toString());
 	}
 
 	@Override
