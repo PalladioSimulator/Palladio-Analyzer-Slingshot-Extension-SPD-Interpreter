@@ -15,6 +15,7 @@ import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entitie
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.model.ModelEvaluator;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.trigger.ModelBasedTriggerChecker;
 import org.palladiosimulator.analyzer.slingshot.common.events.DESEvent;
+import org.palladiosimulator.analyzer.slingshot.core.events.SimulationFinished;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.Subscriber;
 import org.palladiosimulator.analyzer.slingshot.monitor.data.events.MeasurementMade;
 import org.palladiosimulator.spd.ModelBasedScalingPolicy;
@@ -85,10 +86,9 @@ class SpdInterpreter extends SpdSwitch<SpdInterpreter.InterpretationResult> {
 
         final ScalingTriggerInterpreter.InterpretationResult intrResult = (new ScalingTriggerInterpreter.InterpretationResult())
             .scheduleEvent(event)
-            .listenEvent(Subscriber.builder(RepeatedSimulationTimeReached.class)
-                .name("simulationTimeReached"))
-            .listenEvent(Subscriber.builder(MeasurementMade.class)
-                .name("measurementMade"))
+            .listenEvent(Subscriber.builder(RepeatedSimulationTimeReached.class))
+            .listenEvent(Subscriber.builder(MeasurementMade.class))
+            .listenEvent(Subscriber.builder(SimulationFinished.class))
             .triggerChecker(new ModelBasedTriggerChecker(modelEvaluator));
 
         return (new InterpretationResult())
