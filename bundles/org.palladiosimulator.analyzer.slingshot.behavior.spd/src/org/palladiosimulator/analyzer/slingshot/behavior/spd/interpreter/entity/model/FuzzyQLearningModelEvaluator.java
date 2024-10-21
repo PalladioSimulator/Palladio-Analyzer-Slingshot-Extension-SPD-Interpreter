@@ -92,12 +92,12 @@ public class FuzzyQLearningModelEvaluator extends LearningBasedModelEvaluator {
     private final double[][][] qValues;
 
     private final Map<Double, Map<Double, Map<Long, Double>>> Q;
-    private double[][] previousAlpha;
     private int[][] ai;
+    private double approximatedQValue;
     private static final Logger LOGGER = Logger.getLogger(ModelBasedTriggerChecker.class);
 
     public FuzzyQLearningModelEvaluator(final FuzzyQLearningModel model) {
-        super(true, false);
+        super(false, true);
         final ModelInterpreter modelInterpreter = new ModelInterpreter();
         this.discountFactor = model.getDiscountFactor();
         this.epsilon = model.getEpsilon();
@@ -151,20 +151,18 @@ public class FuzzyQLearningModelEvaluator extends LearningBasedModelEvaluator {
             final double reward = this.calculateReward();
             LOGGER.info("Reward (for the last period): " + reward);
             double value = 0;
-            for (int wl = 0; wl <= 2; wl += 1) {
-                for (int rt = 0; rt <= 2; rt += 1) {
+            for (int wl = 0; wl < 3; wl += 1) {
+                for (int rt = 0; rt < 3; rt += 1) {
                     value += this.current_state.getFiringDegree(wl, rt) * Arrays.stream(this.qValues[wl][rt])
                         .max()
                         .getAsDouble();
                 }
             }
             // Step 7: Calculate the error signal
-            double errorSignal = reward + this.discountFactor * value - Q.get(old_state.utilization)
-                .get(old_state.responseTime)
-                .get(old_action);
+            double errorSignal = reward + this.discountFactor * value - this.approximatedQValue;
             // Step 8: Update q-Values
-            for (int wl = 0; wl <= 2; wl += 1) {
-                for (int rt = 0; rt <= 2; rt += 1) {
+            for (int wl = 0; wl < 3; wl += 1) {
+                for (int rt = 0; rt < 3; rt += 1) {
                     this.qValues[wl][rt][ai[wl][rt]] += this.learningRate * errorSignal
                             * this.old_state.getFiringDegree(wl, rt);
                 }
@@ -172,43 +170,44 @@ public class FuzzyQLearningModelEvaluator extends LearningBasedModelEvaluator {
         }
         // this below basically copies the implementation from `fqlearn`
         this.ai = new int[3][3];
-        final double[] currentQValues = this.qValues[this.fuzzy_util(this.current_state.utilization)][this
-            .fuzzy_response(this.current_state.responseTime)];
-        final double[][] alpha = this.calculateFuzzyOutput();
         double a = 0;
         // fuzzy_action_selector
-        for (int wl = 0; wl <= 2; wl += 1) {
-            for (int rt = 0; rt <= 2; rt += 1) {
+        for (int wl = 0; wl < 3; wl += 1) {
+            for (int rt = 0; rt < 3; rt += 1) {
                 if (Math.random() < this.epsilon) {
                     // Explore
                     ai[wl][rt] = ThreadLocalRandom.current()
-                        .nextInt(-2, 3);
+                        .nextInt(0, 5);
                 } else {
                     // Exploit
-                    double bestValue = -Double.MAX_VALUE;
-                    ai[wl][rt] = 0;
-                    for (int index = 0; index <= 5; index++) {
-                        if (currentQValues[index] > bestValue) {
-                            bestValue = currentQValues[index];
-                            ai[wl][rt] = index - 2;
+                    double bestValue = this.qValues[wl][rt][2];
+                    ai[wl][rt] = 2;
+                    for (int index = 0; index < 5; index++) {
+                        if (this.qValues[wl][rt][index] > bestValue) {
+                            bestValue = this.qValues[wl][rt][index];
+                            ai[wl][rt] = index;
                         }
                     }
                 }
             }
         }
         double qValueChange = 0;
-        for (int wl = 0; wl <= 2; wl += 1) {
-            for (int rt = 0; rt <= 2; rt += 1) {
-                qValueChange += alpha[wl][rt] * this.qValues[wl][rt][ai[wl][rt]];
-                a += alpha[wl][rt] * ai[wl][rt];
+        for (int wl = 0; wl < 3; wl += 1) {
+            for (int rt = 0; rt < 3; rt += 1) {
+                qValueChange += this.current_state.getFiringDegree(wl, rt) * this.qValues[wl][rt][ai[wl][rt]];
+                a += this.current_state.getFiringDegree(wl, rt) * (ai[wl][rt] - 2);
             }
         }
-        Q.getOrDefault(current_state.utilization, new HashMap<>())
-            .getOrDefault(current_state.responseTime, new HashMap<>())
-            .put(Math.round(a), qValueChange);
+        LOGGER.info("Current Q-Values: ");
+        for (int wl = 0; wl < 3; wl++) {
+            for (int rt = 0; rt < 3; rt++) {
+                LOGGER.info("q-Values for workload " + wl + " and response time " + rt + ": "
+                        + Arrays.toString(this.qValues[wl][rt]));
+            }
+        }
+        this.approximatedQValue = qValueChange;
         this.old_action = (int) Math.round(a);
         this.old_state = this.current_state;
-        this.previousAlpha = alpha;
     }
 
     /**
@@ -220,10 +219,9 @@ public class FuzzyQLearningModelEvaluator extends LearningBasedModelEvaluator {
      */
     private double approximate_q_function(int[][] ai) {
         double q = 0;
-        double[][] alpha = this.calculateFuzzyOutput();
         for (int i = 0; i <= 3; i++) {
             for (int j = 0; j <= 3; j++) {
-                q = q + alpha[i][j] * this.qValues[i][j][ai[i][j]];
+                q = q + this.current_state.getFiringDegree(i, j) * this.qValues[i][j][ai[i][j]];
             }
         }
         return q;
