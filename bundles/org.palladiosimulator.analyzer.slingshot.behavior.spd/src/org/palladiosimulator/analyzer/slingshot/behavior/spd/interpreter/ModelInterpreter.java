@@ -4,9 +4,11 @@ import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.aggregator.ManagedElementAggregator;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.aggregator.ModelAggregatorWrapper;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.model.FuzzyQLearningModelEvaluator;
+import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.model.FuzzySARSAModelEvaluator;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.model.ModelEvaluator;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.model.RandomModelEvaluator;
 import org.palladiosimulator.spd.models.FuzzyQLearningModel;
+import org.palladiosimulator.spd.models.FuzzySARSAModel;
 import org.palladiosimulator.spd.models.LearningBasedModel;
 import org.palladiosimulator.spd.models.RandomModel;
 import org.palladiosimulator.spd.models.util.ModelsSwitch;
@@ -34,11 +36,16 @@ public class ModelInterpreter extends ModelsSwitch<ModelEvaluator> {
         return new AnyStimulusAggregator<>(stimulus, windowSize, aggregationMethod);
     }
 
+
     @Override
     public ModelEvaluator caseRandomModel(final RandomModel model) {
         return new RandomModelEvaluator(model);
     }
 
+    @Override
+    public ModelEvaluator caseFuzzySARSAModel(FuzzySARSAModel model) {
+        return new FuzzySARSAModelEvaluator(model);
+    }
     @Override
     public ModelEvaluator caseFuzzyQLearningModel(FuzzyQLearningModel model) {
         return new FuzzyQLearningModelEvaluator(model);
