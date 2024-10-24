@@ -1,6 +1,9 @@
 package org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.model;
 
+import java.math.RoundingMode;
+import java.text.NumberFormat;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.ModelInterpreter;
@@ -46,9 +49,9 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
         double[] getFuzzyResponseTime() {
             final double[] fuzzyValues = { 0.0, 0.0, 0.0 };
             // TODO these factors should probably be tuned
-            double lambda = 0.5 * this.targetResponseTime;
-            double mu = this.targetResponseTime;
-            double nu = 1.5 * this.targetResponseTime;
+            final double lambda = 0.5 * this.targetResponseTime;
+            final double mu = this.targetResponseTime;
+            final double nu = 1.5 * this.targetResponseTime;
             if (this.responseTime < lambda) {
                 fuzzyValues[0] = 1;
             } else if (this.responseTime < mu) {
@@ -94,16 +97,17 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
     Integer previousAction = null;
     State currentState = null;
     final double discountFactor;
-    private final double epsilon;
+    final double epsilon;
     protected final double learningRate;
     private final double targetResponseTime;
     private final ModelAggregatorWrapper<OperationResponseTime> responseTimeAggregator;
     private final ModelAggregatorWrapper<?> workloadAggregator;
+    final NumberFormat nf = NumberFormat.getNumberInstance(new Locale("en"));
 
     protected int[][] partialActions;
     protected double approximatedQValue;
 
-    AbstractFuzzyLearningModelEvaluator(FuzzyLearningModel model) {
+    AbstractFuzzyLearningModelEvaluator(final FuzzyLearningModel model) {
         super(false, true);
         final ModelInterpreter modelInterpreter = new ModelInterpreter();
         this.discountFactor = model.getDiscountFactor();
@@ -113,9 +117,12 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
         this.responseTimeAggregator = modelInterpreter.getAggregatorForStimulus(model.getResponseTimeStimulus(), model,
                 model.getResponseTimeAggregationMethod());
         this.workloadAggregator = modelInterpreter.getAggregatorForStimulus(model.getWorkloadStimulus(), model);
+        this.nf.setMaximumFractionDigits(3);
+        this.nf.setMinimumFractionDigits(3);
+        this.nf.setRoundingMode(RoundingMode.UP);
     }
 
-    double calculateValueFunction(double[][][] qValues) {
+    double calculateValueFunction(final double[][][] qValues) {
         double value = 0;
         for (int wl = 0; wl < 3; wl += 1) {
             for (int rt = 0; rt < 3; rt += 1) {
@@ -127,48 +134,53 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
         return value;
     }
 
-    double calculateControlAction(int[][] partialActions) {
+    double calculateControlAction(final State state, final int[][] partialActions) {
         double a = 0;
         for (int wl = 0; wl < 3; wl += 1) {
             for (int rt = 0; rt < 3; rt += 1) {
-                a += this.currentState.getFiringDegree(wl, rt) * (partialActions[wl][rt] - 2);
+                a += state.getFiringDegree(wl, rt) * (partialActions[wl][rt] - 2);
+                if (state.getFiringDegree(wl, rt) > 0) {
+                    System.out.println("Action " + (partialActions[wl][rt] - 2) + " Firing Degree "
+                            + state.getFiringDegree(wl, rt));
+                }
             }
         }
+        System.out.println("Accumulated action: " + a);
         return a;
     }
 
-    int[][] choosePartialActions(double[][][] qValues) {
-        partialActions = new int[3][3];
+    int[][] choosePartialActions(final double[][][] qValues, final double epsilon) {
+        this.partialActions = new int[3][3];
         for (int wl = 0; wl < 3; wl += 1) {
             for (int rt = 0; rt < 3; rt += 1) {
-                if (Math.random() < this.epsilon) {
+                if (Math.random() < epsilon) {
                     // Explore
-                    partialActions[wl][rt] = ThreadLocalRandom.current()
+                    this.partialActions[wl][rt] = ThreadLocalRandom.current()
                         .nextInt(0, 5);
                 } else {
                     // Exploit
                     double bestValue = qValues[wl][rt][2];
-                    partialActions[wl][rt] = 2;
+                    this.partialActions[wl][rt] = 2;
                     for (int index = 0; index < 5; index++) {
                         if (qValues[wl][rt][index] > bestValue) {
                             bestValue = qValues[wl][rt][index];
-                            partialActions[wl][rt] = index;
+                            this.partialActions[wl][rt] = index;
                         }
                     }
                 }
             }
         }
-        return partialActions;
+        return this.partialActions;
     }
 
     /**
      * Function for approximating the q function by multiplying alphas with the given actions
-     * 
+     *
      * @param ai
      *            chosen actions for each state, should have size of state space
      * @return
      */
-    double approximateQFunction(State state, int[][] ai, double[][][] qValues) {
+    double approximateQFunction(final State state, final int[][] ai, final double[][][] qValues) {
         double q = 0;
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
@@ -194,6 +206,18 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
         // Not needed as all aggregation is performed inside recordUsage
     }
 
+    String arrayToString(final double[] array) {
+        final StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < array.length; i++) {
+            sb.append(this.nf.format(array[i]));
+            if (i != array.length - 1) {
+                sb.append(", ");
+            }
+        }
+        return sb.append("]")
+            .toString();
+    }
+
     @Override
     public void recordUsage(final MeasurementMade measurement) {
         this.responseTimeAggregator.aggregateMeasurement(measurement);
@@ -201,14 +225,43 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
     }
 
     @Override
-    public void printTrainedModel() {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
     public int getDecision() throws NotEmittableException {
         return this.previousAction;
+    }
+
+    double[][][] getQValuesWithKnowledge() {
+        final double[][][] q = new double[3][3][5];
+        for (int wl = 0; wl < 3; wl += 1) {
+            for (int rt = 0; rt < 3; rt += 1) {
+                if (wl == 0 && rt != 2) {
+                    if (rt == 1) {
+                        q[wl][rt][1] = 0.2;
+                        q[wl][rt][0] = 0.1;
+                    } else {
+                        q[wl][rt][1] = 0.1;
+                        q[wl][rt][0] = 0.2;
+                    }
+                } else if (wl == 2 && rt != 1) {
+                    if (rt == 2) {
+                        q[wl][rt][4] = 0.2;
+                        q[wl][rt][3] = 0.1;
+                    } else {
+                        q[wl][rt][4] = 0.1;
+                        q[wl][rt][3] = 0.2;
+                    }
+                } else if (wl == 1 && rt == 0) {
+                    q[wl][rt][0] = 0.1;
+                    q[wl][rt][1] = 0.2;
+                    q[wl][rt][2] = 0.1;
+                } else {
+                    q[wl][rt][1] = 0.1;
+                    q[wl][rt][2] = 0.2;
+                    q[wl][rt][3] = 0.1;
+                }
+            }
+        }
+        return q;
+
     }
 
 }
