@@ -4,13 +4,10 @@ import java.util.HashMap;
 
 import org.apache.log4j.Logger;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.aggregator.NotEmittableException;
-import org.palladiosimulator.analyzer.slingshot.monitor.data.events.MeasurementMade;
-import org.palladiosimulator.metricspec.constants.MetricDescriptionConstants;
 import org.palladiosimulator.spd.models.FuzzySARSAModel;
 
 public class FuzzySARSAModelEvaluator extends AbstractFuzzyLearningModelEvaluator {
     private static final Logger LOGGER = Logger.getLogger(FuzzySARSAModelEvaluator.class);
-    private long containerCount;
 
     private final HashMap<Long, double[][][]> qValues;
     private long previousContainerCount;
@@ -21,19 +18,6 @@ public class FuzzySARSAModelEvaluator extends AbstractFuzzyLearningModelEvaluato
         // Step 1: Initialize Q-Values
         this.qValues = new HashMap<>();
         this.iterationCount = 0;
-    }
-
-    @Override
-    public void recordUsage(final MeasurementMade measurement) {
-        super.recordUsage(measurement);
-        if (measurement.getEntity()
-            .getMetricDesciption()
-            .getId()
-            .equals(MetricDescriptionConstants.NUMBER_OF_RESOURCE_CONTAINERS_OVER_TIME.getId())) {
-            this.containerCount = (long) measurement.getEntity()
-                .getMeasureForMetric(MetricDescriptionConstants.NUMBER_OF_RESOURCE_CONTAINERS)
-                .getValue();
-        }
     }
 
     @Override
@@ -110,7 +94,7 @@ public class FuzzySARSAModelEvaluator extends AbstractFuzzyLearningModelEvaluato
         if (this.previousAction != null) {
             if (this.previousAction > 0) {
                 // Small penalty for scaling up
-                reward -= this.previousAction * 0.4;
+                reward -= Math.min(this.previousAction, this.maxContainerCount - this.previousContainerCount) * 0.4;
             } else if (this.previousAction < 0) {
                 // Small reward for scaling down
                 reward += Math.min(-this.previousAction, this.previousContainerCount - 1) * 0.2;

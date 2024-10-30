@@ -9,6 +9,7 @@ public class FuzzyQLearningModelEvaluator extends AbstractFuzzyLearningModelEval
     private static final Logger LOGGER = Logger.getLogger(FuzzyQLearningModelEvaluator.class);
     private final double[][][] qValues;
     private int iterationCount;
+    private long previousContainerCount;
 
     public FuzzyQLearningModelEvaluator(final FuzzyQLearningModel model) {
         super(model);
@@ -20,7 +21,7 @@ public class FuzzyQLearningModelEvaluator extends AbstractFuzzyLearningModelEval
     @Override
     public void update() throws NotEmittableException {
         this.currentState = State.createFromModelAggregators(this);
-        final double currentEpsilon = Math.max(Math.exp(-this.epsilon * this.iterationCount), 0.01);
+        final double currentEpsilon = Math.max(Math.exp(-this.epsilon * this.iterationCount), 0.1);
         LOGGER.info("Utilization: " + this.nf.format(this.currentState.utilization()) + " ("
                 + this.arrayToString(this.currentState.getFuzzyUtil()) + ")" + ", current Epsilon = "
                 + this.nf.format(currentEpsilon));
@@ -64,8 +65,7 @@ public class FuzzyQLearningModelEvaluator extends AbstractFuzzyLearningModelEval
             }
         }
         // Step 2: Select an action
-        this.partialActions = this.choosePartialActions(this.qValues,
-                currentEpsilon);
+        this.partialActions = this.choosePartialActions(this.qValues, currentEpsilon);
         this.iterationCount++;
         // Step 3: Calculate control action a
         final double a = this.calculateControlAction(this.currentState, this.partialActions);
@@ -75,18 +75,23 @@ public class FuzzyQLearningModelEvaluator extends AbstractFuzzyLearningModelEval
         // Step 5: Take action a and let system go to next state (-> in next iteration)
         this.previousAction = (int) Math.round(a);
         this.previousState = this.currentState;
+        this.previousContainerCount = this.containerCount;
     }
 
     @Override
     double calculateReward() {
         double reward = super.calculateReward();
+        if (reward > 0) {
+            // Additional factor discouraging too high container count
+            reward /= this.containerCount;
+        }
         if (this.previousAction != null) {
             if (this.previousAction > 0) {
                 // Small penalty for scaling up
-                reward -= this.previousAction * 0.4;
+                reward -= Math.min(this.previousAction, this.maxContainerCount - this.previousContainerCount) * 0.4;
             } else if (this.previousAction < 0) {
                 // Small reward for scaling down
-                reward -= this.previousAction * 0.2;
+                reward += Math.min(-this.previousAction, this.previousContainerCount - 1) * 0.2;
             }
         }
         return reward;

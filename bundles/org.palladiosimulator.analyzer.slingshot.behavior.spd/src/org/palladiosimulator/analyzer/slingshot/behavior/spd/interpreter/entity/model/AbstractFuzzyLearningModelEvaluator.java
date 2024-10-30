@@ -10,6 +10,7 @@ import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.ModelIn
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.aggregator.ModelAggregatorWrapper;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.aggregator.NotEmittableException;
 import org.palladiosimulator.analyzer.slingshot.monitor.data.events.MeasurementMade;
+import org.palladiosimulator.metricspec.constants.MetricDescriptionConstants;
 import org.palladiosimulator.spd.models.FuzzyLearningModel;
 import org.palladiosimulator.spd.triggers.stimuli.OperationResponseTime;
 
@@ -103,6 +104,8 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
     private final ModelAggregatorWrapper<OperationResponseTime> responseTimeAggregator;
     private final ModelAggregatorWrapper<?> workloadAggregator;
     final NumberFormat nf = NumberFormat.getNumberInstance(new Locale("en"));
+    long containerCount;
+    int maxContainerCount;
 
     protected int[][] partialActions;
     protected double approximatedQValue;
@@ -120,6 +123,7 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
         this.nf.setMaximumFractionDigits(3);
         this.nf.setMinimumFractionDigits(3);
         this.nf.setRoundingMode(RoundingMode.UP);
+        this.maxContainerCount = model.getMaximumContainers();
     }
 
     double calculateValueFunction(final double[][][] qValues) {
@@ -222,11 +226,19 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
     public void recordUsage(final MeasurementMade measurement) {
         this.responseTimeAggregator.aggregateMeasurement(measurement);
         this.workloadAggregator.aggregateMeasurement(measurement);
+        if (measurement.getEntity()
+            .getMetricDesciption()
+            .getId()
+            .equals(MetricDescriptionConstants.NUMBER_OF_RESOURCE_CONTAINERS_OVER_TIME.getId())) {
+            this.containerCount = (long) measurement.getEntity()
+                .getMeasureForMetric(MetricDescriptionConstants.NUMBER_OF_RESOURCE_CONTAINERS)
+                .getValue();
+        }
     }
 
     @Override
     public int getDecision() throws NotEmittableException {
-        return this.previousAction;
+        return (int) Math.min(this.previousAction, this.maxContainerCount - this.containerCount);
     }
 
     double[][][] getQValuesWithKnowledge() {
