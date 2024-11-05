@@ -56,10 +56,10 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
             if (this.responseTime < lambda) {
                 fuzzyValues[0] = 1;
             } else if (this.responseTime < mu) {
-                fuzzyValues[0] = 1 - (this.utilization - lambda) / (mu - lambda);
+                fuzzyValues[0] = 1 - (this.responseTime - lambda) / (mu - lambda);
                 fuzzyValues[1] = 1 - fuzzyValues[0];
             } else if (this.responseTime < nu) {
-                fuzzyValues[1] = 1 - (this.utilization - mu) / (nu - mu);
+                fuzzyValues[1] = 1 - (this.responseTime - mu) / (nu - mu);
                 fuzzyValues[2] = 1 - fuzzyValues[1];
             } else {
                 fuzzyValues[2] = 1;
@@ -243,35 +243,35 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
 
     double[][][] getQValuesWithKnowledge() {
         final double[][][] q = new double[3][3][5];
-        for (int wl = 0; wl < 3; wl += 1) {
-            for (int rt = 0; rt < 3; rt += 1) {
-                if (wl == 0 && rt != 2) {
-                    if (rt == 1) {
-                        q[wl][rt][1] = 0.2;
-                        q[wl][rt][0] = 0.1;
-                    } else {
-                        q[wl][rt][1] = 0.1;
-                        q[wl][rt][0] = 0.2;
-                    }
-                } else if (wl == 2 && rt != 1) {
-                    if (rt == 2) {
-                        q[wl][rt][4] = 0.2;
-                        q[wl][rt][3] = 0.1;
-                    } else {
-                        q[wl][rt][4] = 0.1;
-                        q[wl][rt][3] = 0.2;
-                    }
-                } else if (wl == 1 && rt == 0) {
-                    q[wl][rt][0] = 0.1;
-                    q[wl][rt][1] = 0.2;
-                    q[wl][rt][2] = 0.1;
-                } else {
-                    q[wl][rt][1] = 0.1;
-                    q[wl][rt][2] = 0.2;
-                    q[wl][rt][3] = 0.1;
-                }
-            }
-        }
+//        for (int wl = 0; wl < 3; wl += 1) {
+//            for (int rt = 0; rt < 3; rt += 1) {
+//                if (wl == 0 && rt != 2) {
+//                    if (rt == 1) {
+//                        q[wl][rt][1] = 0.2;
+//                        q[wl][rt][0] = 0.1;
+//                    } else {
+//                        q[wl][rt][1] = 0.1;
+//                        q[wl][rt][0] = 0.2;
+//                    }
+//                } else if (wl == 2 && rt != 1) {
+//                    if (rt == 2) {
+//                        q[wl][rt][4] = 0.2;
+//                        q[wl][rt][3] = 0.1;
+//                    } else {
+//                        q[wl][rt][4] = 0.1;
+//                        q[wl][rt][3] = 0.2;
+//                    }
+//                } else if (wl == 1 && rt == 0) {
+//                    q[wl][rt][0] = 0.1;
+//                    q[wl][rt][1] = 0.2;
+//                    q[wl][rt][2] = 0.1;
+//                } else {
+//                    q[wl][rt][1] = 0.1;
+//                    q[wl][rt][2] = 0.2;
+//                    q[wl][rt][3] = 0.1;
+//                }
+//            }
+//        }
         return q;
 
     }
