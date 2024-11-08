@@ -104,15 +104,16 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
     private final ModelAggregatorWrapper<OperationResponseTime> responseTimeAggregator;
     private final ModelAggregatorWrapper<?> workloadAggregator;
     final NumberFormat nf = NumberFormat.getNumberInstance(new Locale("en"));
-    long containerCount;
-    int maxContainerCount;
+    int containerCount;
+    int previousContainerCount = -1;
 
     protected int[][] partialActions;
     protected double approximatedQValue;
+    private final int minContainerCount;
+    private final int maxContainerCount;
 
-    AbstractFuzzyLearningModelEvaluator(final FuzzyLearningModel model) {
+    AbstractFuzzyLearningModelEvaluator(final FuzzyLearningModel model, final ModelInterpreter modelInterpreter) {
         super(false, true);
-        final ModelInterpreter modelInterpreter = new ModelInterpreter();
         this.discountFactor = model.getDiscountFactor();
         this.epsilon = model.getEpsilon();
         this.learningRate = model.getLearningRate();
@@ -123,7 +124,8 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
         this.nf.setMaximumFractionDigits(3);
         this.nf.setMinimumFractionDigits(3);
         this.nf.setRoundingMode(RoundingMode.UP);
-        this.maxContainerCount = model.getMaximumContainers();
+        this.minContainerCount = modelInterpreter.getMinContainerCount();
+        this.maxContainerCount = modelInterpreter.getMaxContainerCount();
     }
 
     double calculateValueFunction(final double[][][] qValues) {
@@ -143,13 +145,8 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
         for (int wl = 0; wl < 3; wl += 1) {
             for (int rt = 0; rt < 3; rt += 1) {
                 a += state.getFiringDegree(wl, rt) * (partialActions[wl][rt] - 2);
-                if (state.getFiringDegree(wl, rt) > 0) {
-                    System.out.println("Action " + (partialActions[wl][rt] - 2) + " Firing Degree "
-                            + state.getFiringDegree(wl, rt));
-                }
             }
         }
-        System.out.println("Accumulated action: " + a);
         return a;
     }
 
@@ -230,15 +227,19 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
             .getMetricDesciption()
             .getId()
             .equals(MetricDescriptionConstants.NUMBER_OF_RESOURCE_CONTAINERS_OVER_TIME.getId())) {
-            this.containerCount = (long) measurement.getEntity()
+            this.containerCount = (int) measurement.getEntity()
                 .getMeasureForMetric(MetricDescriptionConstants.NUMBER_OF_RESOURCE_CONTAINERS)
                 .getValue();
+            if (this.previousContainerCount == -1) {
+                this.previousContainerCount = this.containerCount;
+            }
         }
     }
 
     @Override
     public int getDecision() throws NotEmittableException {
-        return (int) Math.min(this.previousAction, this.maxContainerCount - this.containerCount);
+        return Math.max(this.minContainerCount,
+                Math.min(this.previousAction, this.maxContainerCount - this.containerCount));
     }
 
     double[][][] getQValuesWithKnowledge() {

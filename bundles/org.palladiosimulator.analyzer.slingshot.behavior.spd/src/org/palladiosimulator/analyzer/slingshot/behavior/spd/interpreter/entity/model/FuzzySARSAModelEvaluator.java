@@ -3,6 +3,7 @@ package org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
+import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.ModelInterpreter;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.aggregator.NotEmittableException;
 import org.palladiosimulator.spd.models.FuzzySARSAModel;
 
@@ -13,8 +14,8 @@ public class FuzzySARSAModelEvaluator extends AbstractFuzzyLearningModelEvaluato
     private long previousContainerCount;
     private int iterationCount;
 
-    public FuzzySARSAModelEvaluator(final FuzzySARSAModel model) {
-        super(model);
+    public FuzzySARSAModelEvaluator(final FuzzySARSAModel model, final ModelInterpreter modelInterpreter) {
+        super(model, modelInterpreter);
         // Step 1: Initialize Q-Values
         this.qValues = new HashMap<>();
         this.iterationCount = 0;

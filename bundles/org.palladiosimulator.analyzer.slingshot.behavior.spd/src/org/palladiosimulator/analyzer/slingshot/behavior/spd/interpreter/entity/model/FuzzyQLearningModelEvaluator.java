@@ -1,6 +1,7 @@
 package org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.model;
 
 import org.apache.log4j.Logger;
+import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.ModelInterpreter;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.aggregator.NotEmittableException;
 import org.palladiosimulator.spd.models.FuzzyQLearningModel;
 
@@ -11,8 +12,8 @@ public class FuzzyQLearningModelEvaluator extends AbstractFuzzyLearningModelEval
     private int iterationCount;
     private long previousContainerCount;
 
-    public FuzzyQLearningModelEvaluator(final FuzzyQLearningModel model) {
-        super(model);
+    public FuzzyQLearningModelEvaluator(final FuzzyQLearningModel model, final ModelInterpreter modelInterpreter) {
+        super(model, modelInterpreter);
         // Step 1: Initialize Q-Values
         this.qValues = this.getQValuesWithKnowledge();
         this.iterationCount = 0;
