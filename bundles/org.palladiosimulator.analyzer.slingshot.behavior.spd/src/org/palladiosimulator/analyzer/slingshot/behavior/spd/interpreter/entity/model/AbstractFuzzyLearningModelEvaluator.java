@@ -104,8 +104,8 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
     private final ModelAggregatorWrapper<OperationResponseTime> responseTimeAggregator;
     private final ModelAggregatorWrapper<?> workloadAggregator;
     final NumberFormat nf = NumberFormat.getNumberInstance(new Locale("en"));
-    int containerCount;
-    int previousContainerCount = -1;
+    long containerCount;
+    long previousContainerCount = -1;
 
     protected int[][] partialActions;
     protected double approximatedQValue;
@@ -192,7 +192,7 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
     }
 
     double calculateReward() {
-        final int actualAction = this.containerCount - this.previousContainerCount;
+        final long actualAction = this.containerCount - this.previousContainerCount;
         this.previousContainerCount = this.containerCount;
         if (this.currentState.responseTime < this.targetResponseTime) {
             return Math.exp(this.currentState.utilization); // Higher utilization should yield
@@ -229,7 +229,7 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
             .getMetricDesciption()
             .getId()
             .equals(MetricDescriptionConstants.NUMBER_OF_RESOURCE_CONTAINERS_OVER_TIME.getId())) {
-            this.containerCount = (int) measurement.getEntity()
+            this.containerCount = (long) measurement.getEntity()
                 .getMeasureForMetric(MetricDescriptionConstants.NUMBER_OF_RESOURCE_CONTAINERS)
                 .getValue();
             if (this.previousContainerCount == -1) {
@@ -240,7 +240,7 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
 
     @Override
     public int getDecision() throws NotEmittableException {
-        return Math.max(this.minContainerCount,
+        return (int) Math.max(this.minContainerCount,
                 Math.min(this.previousAction, this.maxContainerCount - this.containerCount));
     }
 

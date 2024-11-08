@@ -10,7 +10,7 @@ import org.palladiosimulator.spd.models.FuzzySARSAModel;
 public class FuzzySARSAModelEvaluator extends AbstractFuzzyLearningModelEvaluator {
     private static final Logger LOGGER = Logger.getLogger(FuzzySARSAModelEvaluator.class);
 
-    private final HashMap<Integer, double[][][]> qValues;
+    private final HashMap<Long, double[][][]> qValues;
     private int iterationCount;
 
     public FuzzySARSAModelEvaluator(final FuzzySARSAModel model, final ModelInterpreter modelInterpreter) {
@@ -50,7 +50,7 @@ public class FuzzySARSAModelEvaluator extends AbstractFuzzyLearningModelEvaluato
             LOGGER.info("Approximated Q-Values: " + this.nf.format(this.approximatedQValue) + ", previously "
                     + this.nf.format(previousQValue));
             LOGGER.info("Error signal: " + errorSignal);
-            LOGGER.info("Old Q-Values for state " + (this.containerCount - this.previousAction) + ": ");
+            LOGGER.info("Old Q-Values for state " + this.previousContainerCount + ": ");
             for (int wl = 0; wl < 3; wl++) {
                 for (int rt = 0; rt < 3; rt++) {
                     if (this.previousState.getFiringDegree(wl, rt) > 0) {
@@ -68,7 +68,7 @@ public class FuzzySARSAModelEvaluator extends AbstractFuzzyLearningModelEvaluato
                             * this.previousState.getFiringDegree(wl, rt);
                 }
             }
-            LOGGER.info("Updated Q-Values for state " + (this.containerCount - this.previousAction) + ": ");
+            LOGGER.info("Updated Q-Values for state " + this.previousContainerCount + ": ");
             for (int wl = 0; wl < 3; wl++) {
                 for (int rt = 0; rt < 3; rt++) {
                     if (this.previousState.getFiringDegree(wl, rt) > 0) {
