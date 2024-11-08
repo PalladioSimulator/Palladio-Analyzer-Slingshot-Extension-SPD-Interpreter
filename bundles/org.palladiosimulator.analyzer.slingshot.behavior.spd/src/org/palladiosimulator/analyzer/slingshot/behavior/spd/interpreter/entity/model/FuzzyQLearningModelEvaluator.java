@@ -76,7 +76,6 @@ public class FuzzyQLearningModelEvaluator extends AbstractFuzzyLearningModelEval
         // Step 5: Take action a and let system go to next state (-> in next iteration)
         this.previousAction = (int) Math.round(a);
         this.previousState = this.currentState;
-        this.previousContainerCount = this.containerCount;
     }
 
     @Override
@@ -89,10 +88,10 @@ public class FuzzyQLearningModelEvaluator extends AbstractFuzzyLearningModelEval
         if (this.previousAction != null) {
             if (this.previousAction > 0) {
                 // Small penalty for scaling up
-                reward -= Math.min(this.previousAction, this.maxContainerCount - this.previousContainerCount) * 0.4;
+                reward -= (this.containerCount - this.previousContainerCount) * 0.4;
             } else if (this.previousAction < 0) {
                 // Small reward for scaling down
-                reward += Math.min(-this.previousAction, this.previousContainerCount - 1) * 0.2;
+                reward += (this.containerCount - this.previousContainerCount) * 0.2;
             }
         }
         return reward;

@@ -192,10 +192,12 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
     }
 
     double calculateReward() {
+        final int actualAction = this.containerCount - this.previousContainerCount;
+        this.previousContainerCount = this.containerCount;
         if (this.currentState.responseTime < this.targetResponseTime) {
             return Math.exp(this.currentState.utilization); // Higher utilization should yield
                                                             // higher rewards after all!
-        } else if (this.currentState.responseTime < this.previousState.responseTime && this.previousAction > 0) {
+        } else if (this.currentState.responseTime < this.previousState.responseTime && actualAction > 0) {
             return 0;
         } else {
             return Math.exp((this.targetResponseTime - this.currentState.responseTime) / this.targetResponseTime) - 1;
