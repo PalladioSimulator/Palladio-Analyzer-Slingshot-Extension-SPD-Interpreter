@@ -11,6 +11,7 @@ public class SPDInterpreterModule extends AbstractSlingshotExtension {
 	protected void configure() {
 		install(SPDModelConfiguration.class);
 		install(SpdBehavior.class);
+		install(RepeatedSimulationTimeReachedRepeater.class);
 		provideModel(SPD.class, SPDModelProvider.class);
 	}
 

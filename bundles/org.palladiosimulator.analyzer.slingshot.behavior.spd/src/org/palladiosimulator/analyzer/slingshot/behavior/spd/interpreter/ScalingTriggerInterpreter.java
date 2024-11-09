@@ -19,111 +19,109 @@ import org.palladiosimulator.spd.triggers.util.TriggersSwitch;
 
 public class ScalingTriggerInterpreter extends TriggersSwitch<ScalingTriggerInterpreter.InterpretationResult> {
 
-	final ScalingPolicy policy;
+    final ScalingPolicy policy;
 
-	public ScalingTriggerInterpreter(final ScalingPolicy policy) {
-		super();
-		this.policy = policy;
-	}
+    public ScalingTriggerInterpreter(final ScalingPolicy policy) {
+        super();
+        this.policy = policy;
+    }
 
-	@Override
-	public InterpretationResult caseComposedTrigger(final ComposedTrigger object) {
-		return object.getScalingtrigger().stream()
-								  .map(this::doSwitch)
-								  .reduce((res1, res2) -> res1.addFrom(res2, object.getLogicalOperator()))
-								  .orElseGet(InterpretationResult::new);
-	}
+    @Override
+    public InterpretationResult caseComposedTrigger(final ComposedTrigger object) {
+        return object.getScalingtrigger()
+            .stream()
+            .map(this::doSwitch)
+            .reduce((res1, res2) -> res1.addFrom(res2, object.getLogicalOperator()))
+            .orElseGet(InterpretationResult::new);
+    }
 
-	@Override
-	public InterpretationResult caseSimpleFireOnValue(final SimpleFireOnValue object) {
-		final StimuliInterpreter stimuliInterpreter = new StimuliInterpreter(this, object);
-		return stimuliInterpreter.doSwitch(object.getStimulus());
-	}
+    @Override
+    public InterpretationResult caseSimpleFireOnValue(final SimpleFireOnValue object) {
+        final StimuliInterpreter stimuliInterpreter = new StimuliInterpreter(this, object);
+        return stimuliInterpreter.doSwitch(object.getStimulus());
+    }
 
-	@Override
-	public InterpretationResult caseSimpleFireOnTrend(final SimpleFireOnTrend object) {
-		// TODO Auto-generated method stub
-		return super.caseSimpleFireOnTrend(object);
-	}
-	
-	static final class InterpretationResult {
+    @Override
+    public InterpretationResult caseSimpleFireOnTrend(final SimpleFireOnTrend object) {
+        // TODO Auto-generated method stub
+        return super.caseSimpleFireOnTrend(object);
+    }
 
-		private Filter triggerChecker;
-		private final List<SpdBasedEvent> eventsToSchedule = new ArrayList<>();
-		private final List<Subscriber.Builder<? extends DESEvent>> eventsToListen = new ArrayList<>();
+    static final class InterpretationResult {
 
-		public InterpretationResult triggerChecker(final Filter triggerChecker) {
-			this.triggerChecker = triggerChecker;
-			return this;
-		}
+        private Filter triggerChecker;
+        private final List<SpdBasedEvent> eventsToSchedule = new ArrayList<>();
+        private final List<Subscriber.Builder<? extends DESEvent>> eventsToListen = new ArrayList<>();
 
-		public InterpretationResult scheduleEvent(final SpdBasedEvent event) {
-			this.eventsToSchedule.add(event);
-			return this;
-		}
+        public InterpretationResult triggerChecker(final Filter triggerChecker) {
+            this.triggerChecker = triggerChecker;
+            return this;
+        }
 
-		public InterpretationResult listenEvent(final Subscriber.Builder<? extends DESEvent> event) {
-			this.eventsToListen.add(event);
-			return this;
-		}
+        public InterpretationResult scheduleEvent(final SpdBasedEvent event) {
+            this.eventsToSchedule.add(event);
+            return this;
+        }
 
-		public Filter getTriggerChecker() {
-			return this.triggerChecker;
-		}
+        public InterpretationResult listenEvent(final Subscriber.Builder<? extends DESEvent> event) {
+            this.eventsToListen.add(event);
+            return this;
+        }
 
-		public List<SpdBasedEvent> getEventsToSchedule() {
-			return this.eventsToSchedule;
-		}
+        public Filter getTriggerChecker() {
+            return this.triggerChecker;
+        }
 
-		public List<Subscriber.Builder<? extends DESEvent>> getEventsToListen() {
-			return this.eventsToListen;
-		}
+        public List<SpdBasedEvent> getEventsToSchedule() {
+            return this.eventsToSchedule;
+        }
 
-		// TODO: Please look at code style again..
-		public InterpretationResult addFrom(final InterpretationResult other, final LogicalOperator operator) {
-			this.eventsToSchedule.addAll(other.eventsToSchedule);
-			this.eventsToListen.addAll(other.eventsToListen);
+        public List<Subscriber.Builder<? extends DESEvent>> getEventsToListen() {
+            return this.eventsToListen;
+        }
 
-			if (this.triggerChecker == null) {
-				/* We then simply set as the other */
-				this.triggerChecker = other.triggerChecker;
-			} else {
-				switch (operator) {
-				case AND:
-					{
-						final Filter temp = this.triggerChecker;
-						if (temp instanceof final LogicalANDComboundFilter chain) {
-							chain.add(other.triggerChecker);
-						} else {
-							final LogicalANDComboundFilter comboundFilter = new LogicalANDComboundFilter();
-							comboundFilter.add(temp);
-							comboundFilter.add(other.triggerChecker);
-							this.triggerChecker = comboundFilter;
-						}
-					}
-					break;
-				case OR:
-					{
-						final LogicalORCompoundFilter comboundFilter = new LogicalORCompoundFilter();
-						comboundFilter.add(this.triggerChecker);
-						comboundFilter.add(other.triggerChecker);
-						this.triggerChecker = comboundFilter;
-					}
-					break;
-				case XOR:
-					{
-						final LogicalXORCompoundFilter comboundFilter = new LogicalXORCompoundFilter();
-						comboundFilter.add(this.triggerChecker);
-						comboundFilter.add(other.triggerChecker);
-						this.triggerChecker = comboundFilter;
-					}
-					break;
-				default:
-					break;
-				}
-			}
+        // TODO: Please look at code style again..
+        public InterpretationResult addFrom(final InterpretationResult other, final LogicalOperator operator) {
+            this.eventsToSchedule.addAll(other.eventsToSchedule);
+            this.eventsToListen.addAll(other.eventsToListen);
 
-			return this;
-		}
-	}
+            if (this.triggerChecker == null) {
+                /* We then simply set as the other */
+                this.triggerChecker = other.triggerChecker;
+            } else {
+                switch (operator) {
+                case AND: {
+                    final Filter temp = this.triggerChecker;
+                    if (temp instanceof final LogicalANDComboundFilter chain) {
+                        chain.add(other.triggerChecker);
+                    } else {
+                        final LogicalANDComboundFilter comboundFilter = new LogicalANDComboundFilter();
+                        comboundFilter.add(temp);
+                        comboundFilter.add(other.triggerChecker);
+                        this.triggerChecker = comboundFilter;
+                    }
+                }
+                    break;
+                case OR: {
+                    final LogicalORCompoundFilter comboundFilter = new LogicalORCompoundFilter();
+                    comboundFilter.add(this.triggerChecker);
+                    comboundFilter.add(other.triggerChecker);
+                    this.triggerChecker = comboundFilter;
+                }
+                    break;
+                case XOR: {
+                    final LogicalXORCompoundFilter comboundFilter = new LogicalXORCompoundFilter();
+                    comboundFilter.add(this.triggerChecker);
+                    comboundFilter.add(other.triggerChecker);
+                    this.triggerChecker = comboundFilter;
+                }
+                    break;
+                default:
+                    break;
+                }
+            }
+
+            return this;
+        }
+    }
 }
