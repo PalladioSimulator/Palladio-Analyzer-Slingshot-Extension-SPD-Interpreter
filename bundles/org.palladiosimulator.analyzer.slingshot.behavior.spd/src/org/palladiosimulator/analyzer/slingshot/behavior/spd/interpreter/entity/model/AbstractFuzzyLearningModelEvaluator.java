@@ -240,7 +240,7 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
 
     @Override
     public int getDecision() throws NotEmittableException {
-        return (int) Math.max(this.minContainerCount,
+        return (int) Math.max(-this.containerCount + this.minContainerCount,
                 Math.min(this.previousAction, this.maxContainerCount - this.containerCount));
     }
 
