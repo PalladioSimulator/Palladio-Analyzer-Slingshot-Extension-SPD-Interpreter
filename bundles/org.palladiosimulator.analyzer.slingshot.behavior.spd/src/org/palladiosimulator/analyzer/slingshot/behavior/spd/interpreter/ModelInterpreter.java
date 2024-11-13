@@ -18,20 +18,10 @@ import org.palladiosimulator.spd.triggers.stimuli.Stimulus;
 
 public class ModelInterpreter extends ModelsSwitch<ModelEvaluator> {
 
-    private double intervalDuration;
-    private int maxContainerCount;
-    private int minContainerCount;
-
-    public ModelInterpreter(double intervalDuration, final int minContainerCount, final int maxContainerCount) {
-        this.intervalDuration = intervalDuration;
-        this.minContainerCount = minContainerCount;
-        this.maxContainerCount = maxContainerCount;
-    }
-
     @SuppressWarnings("rawtypes")
     public ModelAggregatorWrapper getAggregatorForStimulus(final Stimulus stimulus, final LearningBasedModel model) {
         if (stimulus instanceof final ManagedElementsStateStimulus managedElementsStateStimulus) {
-            return new ManagedElementAggregator<>(managedElementsStateStimulus, this.intervalDuration);
+            return new ManagedElementAggregator<>(managedElementsStateStimulus, model.getInterval());
         } else {
             // TODO currently using average aggregation by default for non-aggregated
             // stimuli, this might need to be changed
@@ -41,7 +31,7 @@ public class ModelInterpreter extends ModelsSwitch<ModelEvaluator> {
 
     public <T extends Stimulus> ModelAggregatorWrapper<T> getAggregatorForStimulus(final T stimulus,
             final LearningBasedModel model, final AGGREGATIONMETHOD aggregationMethod) {
-        return new AnyStimulusAggregator<>(stimulus, this.intervalDuration, aggregationMethod);
+        return new AnyStimulusAggregator<>(stimulus, model.getInterval(), aggregationMethod);
     }
 
     @Override
@@ -57,13 +47,5 @@ public class ModelInterpreter extends ModelsSwitch<ModelEvaluator> {
     @Override
     public ModelEvaluator caseFuzzyQLearningModel(FuzzyQLearningModel model) {
         return new FuzzyQLearningModelEvaluator(model, this);
-    }
-
-    public int getMinContainerCount() {
-        return minContainerCount;
-    }
-
-    public int getMaxContainerCount() {
-        return maxContainerCount;
     }
 }

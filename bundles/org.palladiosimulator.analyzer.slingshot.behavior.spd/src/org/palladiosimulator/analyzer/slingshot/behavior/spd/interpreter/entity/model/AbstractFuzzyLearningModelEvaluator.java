@@ -109,8 +109,6 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
 
     protected int[][] partialActions;
     protected double approximatedQValue;
-    private final int minContainerCount;
-    private final int maxContainerCount;
 
     AbstractFuzzyLearningModelEvaluator(final FuzzyLearningModel model, final ModelInterpreter modelInterpreter) {
         super(false, true);
@@ -124,8 +122,6 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
         this.nf.setMaximumFractionDigits(3);
         this.nf.setMinimumFractionDigits(3);
         this.nf.setRoundingMode(RoundingMode.UP);
-        this.minContainerCount = modelInterpreter.getMinContainerCount();
-        this.maxContainerCount = modelInterpreter.getMaxContainerCount();
     }
 
     double calculateValueFunction(final double[][][] qValues) {
@@ -240,8 +236,7 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
 
     @Override
     public int getDecision() throws NotEmittableException {
-        return (int) Math.max(-this.containerCount + this.minContainerCount,
-                Math.min(this.previousAction, this.maxContainerCount - this.containerCount));
+        return this.previousAction;
     }
 
     double[][][] getQValuesWithKnowledge() {

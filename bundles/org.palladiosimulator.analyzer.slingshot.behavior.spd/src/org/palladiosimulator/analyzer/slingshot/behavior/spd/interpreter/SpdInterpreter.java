@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.apache.log4j.Logger;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.data.RepeatedSimulationTimeReached;
@@ -22,7 +21,6 @@ import org.palladiosimulator.analyzer.slingshot.monitor.data.events.MeasurementM
 import org.palladiosimulator.spd.ModelBasedScalingPolicy;
 import org.palladiosimulator.spd.ReactiveScalingPolicy;
 import org.palladiosimulator.spd.SPD;
-import org.palladiosimulator.spd.constraints.policy.IntervalConstraint;
 import org.palladiosimulator.spd.constraints.target.TargetGroupSizeConstraint;
 import org.palladiosimulator.spd.models.BaseModel;
 import org.palladiosimulator.spd.targets.TargetGroup;
@@ -98,28 +96,10 @@ class SpdInterpreter extends SpdSwitch<SpdInterpreter.InterpretationResult> {
             }
         }
 
-        final Optional<IntervalConstraint> intervalConstraint = policy.getPolicyConstraints()
-            .stream()
-            .filter(IntervalConstraint.class::isInstance)
-            .map(IntervalConstraint.class::cast)
-            .findFirst();
-
-        if (intervalConstraint.isEmpty()) {
-            LOGGER.error("Using a model-based scaling policy without an Interval Constraint is not supported.");
-            return InterpretationResult.EMPTY_RESULT;
-        }
-
         final RepeatedSimulationTimeReached event = new RepeatedSimulationTimeReached(policy.getTargetGroup()
-            .getId(),
-                intervalConstraint.get()
-                    .getOffset()
-                        + intervalConstraint.get()
-                            .getIntervalDuration(),
-                0.f, intervalConstraint.get()
-                    .getIntervalDuration());
+            .getId(), model.getInterval() + model.getIntervalOffset(), model.getInterval());
 
-        final ModelInterpreter modelInterpreter = new ModelInterpreter(intervalConstraint.get()
-            .getIntervalDuration(), minContainerCount, maxContainerCount);
+        final ModelInterpreter modelInterpreter = new ModelInterpreter();
         final ModelEvaluator modelEvaluator = modelInterpreter.doSwitch(model);
 
         final ScalingTriggerInterpreter.InterpretationResult intrResult = (new ScalingTriggerInterpreter.InterpretationResult())
