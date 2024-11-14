@@ -97,7 +97,7 @@ class SpdInterpreter extends SpdSwitch<SpdInterpreter.InterpretationResult> {
         }
 
         final RepeatedSimulationTimeReached event = new RepeatedSimulationTimeReached(policy.getTargetGroup()
-            .getId(), model.getInterval() + model.getIntervalOffset(), model.getInterval());
+            .getId(), model.getInterval() + model.getIntervalOffset(), 0.f, model.getInterval());
 
         final ModelInterpreter modelInterpreter = new ModelInterpreter();
         final ModelEvaluator modelEvaluator = modelInterpreter.doSwitch(model);

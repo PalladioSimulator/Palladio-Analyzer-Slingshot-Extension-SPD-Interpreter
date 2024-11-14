@@ -25,16 +25,8 @@ public class RepeatedSimulationTimeReached extends AbstractSimulationEvent imple
         this.repetitionTime = repetitionTime;
     }
 
-    public RepeatedSimulationTimeReached(String targetGroupId, double simulationTime, double delay) {
-        this(targetGroupId, simulationTime, delay, simulationTime);
-    }
-
     public double getRepetitionTime() {
         return repetitionTime;
-    }
-
-    public RepeatedSimulationTimeReached(final String targetGroupId, final double simulationTime) {
-        this(targetGroupId, simulationTime, 0);
     }
 
     public String getTargetGroupId() {
