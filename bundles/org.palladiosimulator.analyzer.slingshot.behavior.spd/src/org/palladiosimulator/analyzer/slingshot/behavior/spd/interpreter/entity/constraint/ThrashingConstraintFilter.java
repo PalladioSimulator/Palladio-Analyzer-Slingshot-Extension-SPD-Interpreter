@@ -15,6 +15,7 @@ import org.palladiosimulator.spd.adjustments.AdjustmentType;
 import org.palladiosimulator.spd.adjustments.RelativeAdjustment;
 import org.palladiosimulator.spd.adjustments.StepAdjustment;
 import org.palladiosimulator.spd.constraints.target.ThrashingConstraint;
+import org.palladiosimulator.spd.models.LearningBasedModel;
 
 /**
  * The thrashing constraint filter makes sure that there is a certain amount of time passed since
@@ -29,7 +30,7 @@ public final class ThrashingConstraintFilter extends AbstractConstraintFilter<Th
     private static final Logger LOGGER = Logger.getLogger(ThrashingConstraintFilter.class);
 
     private enum ADJUSTMENT_SIGN {
-        POSITIVE, NEGATIVE
+        POSITIVE, NEGATIVE, NEUTRAL
     }
 
     public ThrashingConstraintFilter(final ThrashingConstraint constraint) {
@@ -52,19 +53,34 @@ public final class ThrashingConstraintFilter extends AbstractConstraintFilter<Th
         final double lastSimulationTime = targetGroupState.getLastScalingPolicyEnactmentTime();
         final double currentSimulationTime = event.getEventToFilter()
             .time();
+        if (lastEnactedPolicy instanceof final ModelBasedScalingPolicy modelBasedScalingPolicy
+                && modelBasedScalingPolicy.getModel() instanceof LearningBasedModel && currentSimulationTime < 1000) {
+            // Thrashing constraint filter only kicks in after initial learning period
+            return FilterResult.success(event.getEventToFilter());
+        }
 
         final ScalingPolicy currentScalingPolicy = event.getState()
             .getScalingPolicy();
 
-        if ((currentScalingPolicy instanceof ReactiveScalingPolicy reactiveScalingPolicy
+        if ((currentScalingPolicy instanceof final ReactiveScalingPolicy reactiveScalingPolicy
                 && reactiveScalingPolicy.getAdjustmentType() instanceof AbsoluteAdjustment)
-                || (lastEnactedPolicy instanceof ReactiveScalingPolicy lastEnactedReactiveScalingPolicy
+                || (lastEnactedPolicy instanceof final ReactiveScalingPolicy lastEnactedReactiveScalingPolicy
                         && lastEnactedReactiveScalingPolicy.getAdjustmentType() instanceof AbsoluteAdjustment)) {
             return FilterResult.success(event.getEventToFilter());
         }
 
-        if (!retrieveSign(currentScalingPolicy).equals(retrieveSign(lastEnactedPolicy))
-                && lastSimulationTime + constraint.getMinimumTimeNoThrashing() >= currentSimulationTime) {
+        final ADJUSTMENT_SIGN currentSign = this.retrieveSign(currentScalingPolicy);
+        final ADJUSTMENT_SIGN lastSign = lastEnactedPolicy instanceof ModelBasedScalingPolicy
+                ? this.retrieveSign(targetGroupState.getLastDynamicScalingDecision())
+                : this.retrieveSign(lastEnactedPolicy);
+
+        if (lastSign.equals(ADJUSTMENT_SIGN.NEUTRAL)) {
+            // no scaling action in last period -> allow
+            return FilterResult.success(event.getEventToFilter());
+        }
+
+        if (!currentSign.equals(lastSign)
+                && lastSimulationTime + this.constraint.getMinimumTimeNoThrashing() >= currentSimulationTime) {
             // opposite signs and min time did not pass -> disregard
             return FilterResult.disregard(event.getEventToFilter());
         }
@@ -72,10 +88,10 @@ public final class ThrashingConstraintFilter extends AbstractConstraintFilter<Th
     }
 
     public ADJUSTMENT_SIGN retrieveSign(final ScalingPolicy policy) {
-        if (policy instanceof ReactiveScalingPolicy reactiveScalingPolicy) {
-            return retrieveSign(reactiveScalingPolicy.getAdjustmentType());
-        } else if (policy instanceof ModelBasedScalingPolicy modelBasedScalingPolicy) {
-            return retrieveSign(modelBasedScalingPolicy);
+        if (policy instanceof final ReactiveScalingPolicy reactiveScalingPolicy) {
+            return this.retrieveSign(reactiveScalingPolicy.getAdjustmentType());
+        } else if (policy instanceof final ModelBasedScalingPolicy modelBasedScalingPolicy) {
+            return this.retrieveSign(modelBasedScalingPolicy.getAdjustment());
         } else {
             LOGGER.debug("Encountered an unsupported type of scaling policy, did not apply thrashing constraints");
             return ADJUSTMENT_SIGN.POSITIVE;
@@ -92,7 +108,12 @@ public final class ThrashingConstraintFilter extends AbstractConstraintFilter<Th
         return ADJUSTMENT_SIGN.POSITIVE;
     }
 
-    public ADJUSTMENT_SIGN retrieveSign(final ModelBasedScalingPolicy policy) {
-        return policy.getAdjustment() > 0 ? ADJUSTMENT_SIGN.POSITIVE : ADJUSTMENT_SIGN.NEGATIVE;
+    public ADJUSTMENT_SIGN retrieveSign(final int adjustment) {
+        if (adjustment > 0) {
+            return ADJUSTMENT_SIGN.POSITIVE;
+        } else if (adjustment < 0) {
+            return ADJUSTMENT_SIGN.NEGATIVE;
+        }
+        return ADJUSTMENT_SIGN.NEUTRAL;
     }
 }
