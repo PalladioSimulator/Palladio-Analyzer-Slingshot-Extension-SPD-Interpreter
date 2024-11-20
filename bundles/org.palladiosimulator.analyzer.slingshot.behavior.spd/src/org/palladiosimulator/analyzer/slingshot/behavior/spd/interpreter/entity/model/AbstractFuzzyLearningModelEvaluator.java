@@ -6,12 +6,14 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.apache.log4j.Logger;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.ModelInterpreter;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.aggregator.ModelAggregatorWrapper;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.aggregator.NotEmittableException;
 import org.palladiosimulator.analyzer.slingshot.monitor.data.events.MeasurementMade;
 import org.palladiosimulator.metricspec.constants.MetricDescriptionConstants;
 import org.palladiosimulator.spd.models.FuzzyLearningModel;
+import org.palladiosimulator.spd.models.InitializationType;
 import org.palladiosimulator.spd.triggers.stimuli.OperationResponseTime;
 
 public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedModelEvaluator {
@@ -106,9 +108,11 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
     final NumberFormat nf = NumberFormat.getNumberInstance(new Locale("en"));
     long containerCount;
     long previousContainerCount = -1;
+    private static final Logger LOGGER = Logger.getLogger(AbstractFuzzyLearningModelEvaluator.class);
 
     protected int[][] partialActions;
     protected double approximatedQValue;
+    private InitializationType initializationType;
 
     AbstractFuzzyLearningModelEvaluator(final FuzzyLearningModel model, final ModelInterpreter modelInterpreter) {
         super(false, true);
@@ -122,6 +126,7 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
         this.nf.setMaximumFractionDigits(3);
         this.nf.setMinimumFractionDigits(3);
         this.nf.setRoundingMode(RoundingMode.UP);
+        this.initializationType = model.getInitializationType();
     }
 
     double calculateValueFunction(final double[][][] qValues) {
@@ -241,37 +246,51 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
 
     double[][][] getQValuesWithKnowledge() {
         final double[][][] q = new double[3][3][5];
-//        for (int wl = 0; wl < 3; wl += 1) {
-//            for (int rt = 0; rt < 3; rt += 1) {
-//                if (wl == 0 && rt != 2) {
-//                    if (rt == 1) {
-//                        q[wl][rt][1] = 0.2;
-//                        q[wl][rt][0] = 0.1;
-//                    } else {
-//                        q[wl][rt][1] = 0.1;
-//                        q[wl][rt][0] = 0.2;
-//                    }
-//                } else if (wl == 2 && rt != 1) {
-//                    if (rt == 2) {
-//                        q[wl][rt][4] = 0.2;
-//                        q[wl][rt][3] = 0.1;
-//                    } else {
-//                        q[wl][rt][4] = 0.1;
-//                        q[wl][rt][3] = 0.2;
-//                    }
-//                } else if (wl == 1 && rt == 0) {
-//                    q[wl][rt][0] = 0.1;
-//                    q[wl][rt][1] = 0.2;
-//                    q[wl][rt][2] = 0.1;
-//                } else {
-//                    q[wl][rt][1] = 0.1;
-//                    q[wl][rt][2] = 0.2;
-//                    q[wl][rt][3] = 0.1;
-//                }
-//            }
-//        }
+        switch (this.initializationType) {
+        case KNOWLEDGE:
+            for (int wl = 0; wl < 3; wl += 1) {
+                for (int rt = 0; rt < 3; rt += 1) {
+                    if (wl == 0 && rt != 2) {
+                        if (rt == 1) {
+                            q[wl][rt][1] = 0.2;
+                            q[wl][rt][0] = 0.1;
+                        } else {
+                            q[wl][rt][1] = 0.1;
+                            q[wl][rt][0] = 0.2;
+                        }
+                    } else if (wl == 2 && rt != 1) {
+                        if (rt == 2) {
+                            q[wl][rt][4] = 0.2;
+                            q[wl][rt][3] = 0.1;
+                        } else {
+                            q[wl][rt][4] = 0.1;
+                            q[wl][rt][3] = 0.2;
+                        }
+                    } else if (wl == 1 && rt == 0) {
+                        q[wl][rt][0] = 0.1;
+                        q[wl][rt][1] = 0.2;
+                        q[wl][rt][2] = 0.1;
+                    } else {
+                        q[wl][rt][1] = 0.1;
+                        q[wl][rt][2] = 0.2;
+                        q[wl][rt][3] = 0.1;
+                    }
+                }
+            }
+            break;
+        case OPTIMISTIC:
+            for (int wl = 0; wl < 3; wl += 1) {
+                for (int rt = 0; rt < 3; rt += 1) {
+                    q[wl][rt] = new double[] { 1.0, 1.0, 1.0, 1.0, 1.0 };
+                }
+            }
+            break;
+        case PESSIMISTIC:
+            break;
+        default:
+            LOGGER.error("Unsupported initialization type " + this.initializationType);
+        }
         return q;
-
     }
 
 }

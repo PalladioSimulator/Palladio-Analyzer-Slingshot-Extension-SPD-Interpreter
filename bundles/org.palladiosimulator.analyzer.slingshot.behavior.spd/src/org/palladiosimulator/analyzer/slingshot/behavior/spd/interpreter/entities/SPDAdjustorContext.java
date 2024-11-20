@@ -91,10 +91,8 @@ public final class SPDAdjustorContext {
 
         scalingPolicy.getPolicyConstraints()
             .stream()
-            .filter(constraint -> {
-                return !(this.scalingPolicy instanceof ModelBasedScalingPolicy
-                        && constraint instanceof IntervalConstraint);
-            })
+            .filter(constraint -> !(this.scalingPolicy instanceof ModelBasedScalingPolicy
+                    && constraint instanceof IntervalConstraint))
             .forEach(constraint -> this.filterChain
                 .add(AbstractConstraintFilter.createAbstractConstraintFilter(constraint)));
 

@@ -88,10 +88,10 @@ public class FuzzyQLearningModelEvaluator extends AbstractFuzzyLearningModelEval
         if (this.previousAction != null) {
             if (this.previousAction > 0) {
                 // Small penalty for scaling up
-                reward -= (this.containerCount - this.previousContainerCount) * 0.4;
+                reward -= (this.containerCount - this.previousContainerCount) * 4;
             } else if (this.previousAction < 0) {
                 // Small reward for scaling down
-                reward += (this.containerCount - this.previousContainerCount) * 0.2;
+                reward += (this.containerCount - this.previousContainerCount) * 2;
             }
         }
         return reward;
