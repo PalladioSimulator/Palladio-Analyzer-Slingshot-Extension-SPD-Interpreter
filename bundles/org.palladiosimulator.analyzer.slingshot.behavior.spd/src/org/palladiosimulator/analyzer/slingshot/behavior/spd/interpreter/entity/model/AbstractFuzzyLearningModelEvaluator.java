@@ -51,7 +51,6 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
 
         double[] getFuzzyResponseTime() {
             final double[] fuzzyValues = { 0.0, 0.0, 0.0 };
-            // TODO these factors should probably be tuned
             final double lambda = 0.5 * this.targetResponseTime;
             final double mu = this.targetResponseTime;
             final double nu = 1.5 * this.targetResponseTime;
@@ -194,7 +193,6 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
 
     double calculateReward() {
         final long actualAction = this.containerCount - this.previousContainerCount;
-        this.previousContainerCount = this.containerCount;
         if (this.currentState.responseTime < this.targetResponseTime) {
             return Math.exp(this.currentState.utilization); // Higher utilization should yield
                                                             // higher rewards after all!
@@ -241,6 +239,7 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
 
     @Override
     public int getDecision() throws NotEmittableException {
+        this.previousContainerCount = this.containerCount;
         return this.previousAction;
     }
 
@@ -248,28 +247,35 @@ public abstract class AbstractFuzzyLearningModelEvaluator extends LearningBasedM
         final double[][][] q = new double[3][3][5];
         switch (this.initializationType) {
         case KNOWLEDGE:
+
             for (int wl = 0; wl < 3; wl += 1) {
                 for (int rt = 0; rt < 3; rt += 1) {
                     if (wl == 0 && rt != 2) {
                         if (rt == 1) {
-                            q[wl][rt][1] = 0.2;
                             q[wl][rt][0] = 0.1;
+                            q[wl][rt][1] = 0.2;
+                            q[wl][rt][2] = 0.1;
                         } else {
-                            q[wl][rt][1] = 0.1;
                             q[wl][rt][0] = 0.2;
+                            q[wl][rt][1] = 0.1;
                         }
-                    } else if (wl == 2 && rt != 1) {
-                        if (rt == 2) {
-                            q[wl][rt][4] = 0.2;
-                            q[wl][rt][3] = 0.1;
-                        } else {
-                            q[wl][rt][4] = 0.1;
+                    } else if (wl == 2 && rt != 0) {
+                        if (rt == 1) {
+                            q[wl][rt][2] = 0.1;
                             q[wl][rt][3] = 0.2;
+                            q[wl][rt][4] = 0.1;
+                        } else {
+                            q[wl][rt][3] = 0.1;
+                            q[wl][rt][4] = 0.2;
                         }
                     } else if (wl == 1 && rt == 0) {
                         q[wl][rt][0] = 0.1;
                         q[wl][rt][1] = 0.2;
                         q[wl][rt][2] = 0.1;
+                    } else if (wl == 1 && rt == 2) {
+                        q[wl][rt][2] = 0.1;
+                        q[wl][rt][3] = 0.2;
+                        q[wl][rt][4] = 0.1;
                     } else {
                         q[wl][rt][1] = 0.1;
                         q[wl][rt][2] = 0.2;

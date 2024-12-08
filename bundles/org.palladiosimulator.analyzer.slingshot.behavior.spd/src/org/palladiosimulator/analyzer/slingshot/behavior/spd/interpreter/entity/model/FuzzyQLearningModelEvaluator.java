@@ -10,7 +10,6 @@ public class FuzzyQLearningModelEvaluator extends AbstractFuzzyLearningModelEval
     private static final Logger LOGGER = Logger.getLogger(FuzzyQLearningModelEvaluator.class);
     private final double[][][] qValues;
     private int iterationCount;
-    private long previousContainerCount;
 
     public FuzzyQLearningModelEvaluator(final FuzzyQLearningModel model, final ModelInterpreter modelInterpreter) {
         super(model, modelInterpreter);
@@ -22,7 +21,7 @@ public class FuzzyQLearningModelEvaluator extends AbstractFuzzyLearningModelEval
     @Override
     public void update() throws NotEmittableException {
         this.currentState = State.createFromModelAggregators(this);
-        final double currentEpsilon = Math.max(Math.exp(-this.epsilon * this.iterationCount), 0.1);
+        final double currentEpsilon = Math.max(Math.exp(-this.epsilon * this.iterationCount), 0.05);
         LOGGER.info("Utilization: " + this.nf.format(this.currentState.utilization()) + " ("
                 + this.arrayToString(this.currentState.getFuzzyUtil()) + ")" + ", current Epsilon = "
                 + this.nf.format(currentEpsilon));
@@ -88,10 +87,10 @@ public class FuzzyQLearningModelEvaluator extends AbstractFuzzyLearningModelEval
         if (this.previousAction != null) {
             if (this.previousAction > 0) {
                 // Small penalty for scaling up
-                reward -= (this.containerCount - this.previousContainerCount) * 4;
+                reward -= (this.containerCount - this.previousContainerCount) * 0;
             } else if (this.previousAction < 0) {
                 // Small reward for scaling down
-                reward += (this.containerCount - this.previousContainerCount) * 2;
+                reward += (this.containerCount - this.previousContainerCount) * 0;
             }
         }
         return reward;

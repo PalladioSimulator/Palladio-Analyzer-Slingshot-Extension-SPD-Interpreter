@@ -25,7 +25,7 @@ public class FuzzySARSAModelEvaluator extends AbstractFuzzyLearningModelEvaluato
         this.currentState = State.createFromModelAggregators(this);
         this.qValues.putIfAbsent(this.containerCount, this.getQValuesWithKnowledge());
         this.iterationCount += 1;
-        final double currentEpsilon = Math.max(Math.exp(-this.epsilon * this.iterationCount), 0.1);
+        final double currentEpsilon = Math.max(Math.exp(-this.epsilon * this.iterationCount), 0.05);
         final double[][][] currentQValues = this.qValues.get(this.containerCount);
         LOGGER.info("Utilization: " + this.nf.format(this.currentState.utilization()) + " ("
                 + this.arrayToString(this.currentState.getFuzzyUtil()) + ")" + ", current Epsilon = "
@@ -93,10 +93,10 @@ public class FuzzySARSAModelEvaluator extends AbstractFuzzyLearningModelEvaluato
         if (this.previousAction != null) {
             if (this.previousAction > 0) {
                 // Small penalty for scaling up
-                reward -= (this.containerCount - this.previousContainerCount) * 4;
+                reward -= (this.containerCount - this.previousContainerCount) * 0;
             } else if (this.previousAction < 0) {
                 // Small reward for scaling down
-                reward += (this.containerCount - this.previousContainerCount) * 2;
+                reward += (this.containerCount - this.previousContainerCount) * 0;
             }
         }
         return reward;
