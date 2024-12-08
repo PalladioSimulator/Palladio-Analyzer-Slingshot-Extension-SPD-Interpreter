@@ -67,6 +67,8 @@ public class SlidingTimeWindowAggregation extends AbstractWindowAggregation {
                 new RateOfChangeAggregation());
         case PERCENTILE95 -> new SlidingTimeWindowAggregation(winSizeSeconds, noEmitDuration,
                 new PercentileAggregation(0.95));
+        case PERCENTILE90 -> new SlidingTimeWindowAggregation(winSizeSeconds, noEmitDuration,
+                new PercentileAggregation(0.90));
         default -> throw new IllegalArgumentException("Unexpected value: " + aggregationMethod);
         };
     }
