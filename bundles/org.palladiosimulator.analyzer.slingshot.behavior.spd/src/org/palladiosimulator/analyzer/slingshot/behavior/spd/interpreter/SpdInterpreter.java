@@ -19,8 +19,8 @@ import org.palladiosimulator.analyzer.slingshot.core.events.SimulationFinished;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.Subscriber;
 import org.palladiosimulator.analyzer.slingshot.monitor.data.events.MeasurementMade;
 import org.palladiosimulator.spd.ModelBasedScalingPolicy;
-import org.palladiosimulator.spd.ReactiveScalingPolicy;
 import org.palladiosimulator.spd.SPD;
+import org.palladiosimulator.spd.TriggerBasedScalingPolicy;
 import org.palladiosimulator.spd.constraints.target.TargetGroupSizeConstraint;
 import org.palladiosimulator.spd.models.BaseModel;
 import org.palladiosimulator.spd.targets.TargetGroup;
@@ -53,8 +53,9 @@ class SpdInterpreter extends SpdSwitch<SpdInterpreter.InterpretationResult> {
     }
 
     @Override
-    public InterpretationResult caseReactiveScalingPolicy(final ReactiveScalingPolicy policy) {
-        LOGGER.debug("Interpreting ReactiveScalingPolicy Model " + policy.getEntityName() + "[" + policy.getId() + "]");
+    public InterpretationResult caseTriggerBasedScalingPolicy(final TriggerBasedScalingPolicy policy) {
+        LOGGER.debug(
+                "Interpreting TriggerBasedScalingPolicy Model " + policy.getEntityName() + "[" + policy.getId() + "]");
 
         if (!policy.isActive()) {
             return new InterpretationResult();

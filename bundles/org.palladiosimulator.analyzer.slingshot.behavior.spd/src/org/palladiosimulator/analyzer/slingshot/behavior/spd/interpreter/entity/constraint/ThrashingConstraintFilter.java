@@ -8,8 +8,8 @@ import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entitie
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entities.FilterResult;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entities.TargetGroupState;
 import org.palladiosimulator.spd.ModelBasedScalingPolicy;
-import org.palladiosimulator.spd.ReactiveScalingPolicy;
 import org.palladiosimulator.spd.ScalingPolicy;
+import org.palladiosimulator.spd.TriggerBasedScalingPolicy;
 import org.palladiosimulator.spd.adjustments.AbsoluteAdjustment;
 import org.palladiosimulator.spd.adjustments.AdjustmentType;
 import org.palladiosimulator.spd.adjustments.RelativeAdjustment;
@@ -62,10 +62,10 @@ public final class ThrashingConstraintFilter extends AbstractConstraintFilter<Th
         final ScalingPolicy currentScalingPolicy = event.getState()
             .getScalingPolicy();
 
-        if ((currentScalingPolicy instanceof final ReactiveScalingPolicy reactiveScalingPolicy
-                && reactiveScalingPolicy.getAdjustmentType() instanceof AbsoluteAdjustment)
-                || (lastEnactedPolicy instanceof final ReactiveScalingPolicy lastEnactedReactiveScalingPolicy
-                        && lastEnactedReactiveScalingPolicy.getAdjustmentType() instanceof AbsoluteAdjustment)) {
+        if ((currentScalingPolicy instanceof final TriggerBasedScalingPolicy triggerBasedScalingPolicy
+                && triggerBasedScalingPolicy.getAdjustmentType() instanceof AbsoluteAdjustment)
+                || (lastEnactedPolicy instanceof final TriggerBasedScalingPolicy lastEnactedTriggerBasedScalingPolicy
+                        && lastEnactedTriggerBasedScalingPolicy.getAdjustmentType() instanceof AbsoluteAdjustment)) {
             return FilterResult.success(event.getEventToFilter());
         }
 
@@ -88,8 +88,8 @@ public final class ThrashingConstraintFilter extends AbstractConstraintFilter<Th
     }
 
     public ADJUSTMENT_SIGN retrieveSign(final ScalingPolicy policy) {
-        if (policy instanceof final ReactiveScalingPolicy reactiveScalingPolicy) {
-            return this.retrieveSign(reactiveScalingPolicy.getAdjustmentType());
+        if (policy instanceof final TriggerBasedScalingPolicy triggerBasedScalingPolicy) {
+            return this.retrieveSign(triggerBasedScalingPolicy.getAdjustmentType());
         } else if (policy instanceof final ModelBasedScalingPolicy modelBasedScalingPolicy) {
             return this.retrieveSign(modelBasedScalingPolicy.getAdjustment());
         } else {
