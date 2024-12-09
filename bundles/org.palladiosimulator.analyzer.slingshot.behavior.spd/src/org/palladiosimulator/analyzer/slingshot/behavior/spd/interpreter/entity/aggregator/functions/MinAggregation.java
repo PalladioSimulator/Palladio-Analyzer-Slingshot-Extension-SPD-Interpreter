@@ -4,18 +4,21 @@ import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
 
-public class MinAggregation implements Function<Collection<Double>, Double> {
-	
-	public MinAggregation() {
-		super();
-	}
+import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.aggregator.DataPoint;
 
-	@Override
-	public Double apply(Collection<Double> t) {
-		// TODO Auto-generated method stub
-		return t.stream()
-				.min(Double::compare)
-				.orElseThrow(() -> new NoSuchElementException("There are no values to aggregate yet."));
-	}
+public class MinAggregation implements Function<Collection<DataPoint>, Double> {
+
+    public MinAggregation() {
+        super();
+    }
+
+    @Override
+    public Double apply(Collection<DataPoint> t) {
+        // TODO Auto-generated method stub
+        return t.stream()
+            .map(DataPoint::getValue)
+            .min(Double::compare)
+            .orElseThrow(() -> new NoSuchElementException("There are no values to aggregate yet."));
+    }
 
 }

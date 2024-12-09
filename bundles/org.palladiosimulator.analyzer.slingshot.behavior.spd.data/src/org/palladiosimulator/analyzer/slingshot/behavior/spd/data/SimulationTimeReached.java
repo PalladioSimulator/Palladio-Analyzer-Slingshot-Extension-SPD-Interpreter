@@ -17,7 +17,7 @@ import org.palladiosimulator.analyzer.slingshot.common.events.AbstractSimulation
  * 
  * @author Julijan Katic
  */
-public final class SimulationTimeReached extends AbstractSimulationEvent implements SpdBasedEvent {
+public class SimulationTimeReached extends AbstractSimulationEvent implements SpdBasedEvent {
 
 	private final String targetGroupId;
 

@@ -4,28 +4,33 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Function;
 
-public class MedianAggregation  implements Function<Collection<Double>, Double> {
-	
-	public MedianAggregation() {
-		super();
-	}
+import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.aggregator.DataPoint;
 
-	@Override
-	public Double apply(Collection<Double> t) {
-		
-		if (t.size() == 0) {
-			return 0.0;
-		}
+public class MedianAggregation implements Function<Collection<DataPoint>, Double> {
 
-		final Double[] values = t.toArray(new Double[0]);
-		Arrays.sort(values);
-		final int i = values.length;
+    public MedianAggregation() {
+        super();
+    }
 
-		if (i % 2 == 0) {
-			return (values[i / 2] + values[i / 2 - 1]) / 2;
-		} else {
-			return (values[(i - 1) / 2]);
-		}
-	}
+    @Override
+    public Double apply(Collection<DataPoint> t) {
+
+        if (t.size() == 0) {
+            return 0.0;
+        }
+
+        final Double[] values = t.stream()
+            .map(DataPoint::getValue)
+            .toList()
+            .toArray(new Double[0]);
+        Arrays.sort(values);
+        final int i = values.length;
+
+        if (i % 2 == 0) {
+            return (values[i / 2] + values[i / 2 - 1]) / 2;
+        } else {
+            return (values[(i - 1) / 2]);
+        }
+    }
 
 }
