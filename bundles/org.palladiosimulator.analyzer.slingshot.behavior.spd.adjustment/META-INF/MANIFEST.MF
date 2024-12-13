@@ -5,14 +5,14 @@ Bundle-SymbolicName: org.palladiosimulator.analyzer.slingshot.behavior.spd.adjus
 Bundle-Version: 1.0.0.qualifier
 Automatic-Module-Name: org.palladiosimulator.analyzer.slingshot.behavior.spd.adjustment
 Bundle-RequiredExecutionEnvironment: JavaSE-17
-Require-Bundle: org.palladiosimulator.analyzer.slingshot.behavior.spd.data;bundle-version="1.0.0",
- org.palladiosimulator.analyzer.slingshot.core;bundle-version="1.0.0",
+Require-Bundle: org.palladiosimulator.analyzer.slingshot.behavior.spd.data,
+ org.palladiosimulator.analyzer.slingshot.core,
  org.palladiosimulator.monitorrepository,
  org.palladiosimulator.pcm.edp2.measuringpoint,
  org.eclipse.m2m.qvt.oml;bundle-version="3.10.4",
  de.uka.ipd.sdq.workflow.mdsd.blackboard,
  org.palladiosimulator.analyzer.workflow,
- org.palladiosimulator.spd.semantic;bundle-version="1.0.0",
- org.palladiosimulator.analyzer.slingshot.ui.events;bundle-version="1.0.0",
- org.palladiosimulator.analyzer.slingshot.workflow.events;bundle-version="1.0.0"
+ org.palladiosimulator.spd.semantic,
+ org.palladiosimulator.analyzer.slingshot.ui.events,
+ org.palladiosimulator.analyzer.slingshot.workflow.events
 Export-Package: org.palladiosimulator.analyzer.slingshot.behavior.spd.monitor
