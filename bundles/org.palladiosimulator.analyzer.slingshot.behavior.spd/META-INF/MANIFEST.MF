@@ -3,6 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Spd
 Bundle-SymbolicName: org.palladiosimulator.analyzer.slingshot.behavior.spd;singleton:=true
 Bundle-Version: 1.0.0.qualifier
+Import-Package: org.apache.commons.math3.stat.regression
 Automatic-Module-Name: org.palladiosimulator.analyzer.slingshot.behavior.spd
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: org.palladiosimulator.analyzer.slingshot.core,
@@ -13,4 +14,6 @@ Require-Bundle: org.palladiosimulator.analyzer.slingshot.core,
  org.palladiosimulator.analyzer.slingshot.ui.events,
  org.palladiosimulator.analyzer.slingshot.workflow.events,
  org.palladiosimulator.pcm.edp2.measuringpoint,
- org.palladiosimulator.spd.semantic
+ org.palladiosimulator.spd.semantic,
+ org.palladiosimulator.spd,
+ org.palladiosimulator.spd.measuringpoint
