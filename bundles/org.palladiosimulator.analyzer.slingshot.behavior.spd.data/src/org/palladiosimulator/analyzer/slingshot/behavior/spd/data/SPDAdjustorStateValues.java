@@ -1,5 +1,9 @@
 package org.palladiosimulator.analyzer.slingshot.behavior.spd.data;
 
+import java.util.List;
+
+import org.palladiosimulator.spd.ScalingPolicy;
+
 /**
  *
  * Record of the values of an {@code SPDAdjustorState}.
@@ -10,6 +14,10 @@ package org.palladiosimulator.analyzer.slingshot.behavior.spd.data;
  * @author Sarah Stieß
  *
  */
-public record SPDAdjustorStateValues(String scalingPolicyId, double latestAdjustmentAtSimulationTime, int numberScales,
-		double coolDownEnd, int numberOfScalesInCooldown) {
+public record SPDAdjustorStateValues(ScalingPolicy scalingPolicy, double latestAdjustmentAtSimulationTime, int numberScales,
+		double coolDownEnd, int numberOfScalesInCooldown, List<ScalingPolicy> enactedPolicies, List<Double> enactmentTimeOfPolicies) {
+	
+	public String scalingPolicyId() {
+		return scalingPolicy().getId();
+	}
 }

@@ -47,9 +47,9 @@ public final class SPDAdjustorContext {
 	private SPDAdjustorState state;
 	private final SPDAdjustorState previousState;
 
-	public SPDAdjustorContext(final ScalingPolicy policy,
-			final Filter triggerChecker,
-			final List<Subscriber.Builder<? extends DESEvent>> associatedHandlers, final TargetGroupState targetGroupState) {
+	public SPDAdjustorContext(final ScalingPolicy policy, final Filter triggerChecker,
+			final List<Subscriber.Builder<? extends DESEvent>> associatedHandlers,
+			final TargetGroupState targetGroupState) {
 		this.scalingPolicy = policy;
 
 		state = new SPDAdjustorState(policy, targetGroupState);
@@ -61,17 +61,12 @@ public final class SPDAdjustorContext {
 
 		final PublishResultingEventFilter publisher = new PublishResultingEventFilter();
 
-
-		this.associatedHandlers = associatedHandlers.stream()
-				.map(builder -> builder.handler(publisher))
-				.map(builder -> builder.build())
-				.collect(Collectors.toSet());
+		this.associatedHandlers = associatedHandlers.stream().map(builder -> builder.handler(publisher))
+				.map(builder -> builder.build()).collect(Collectors.toSet());
 
 		this.associatedHandlers.add(Subscriber.builder(SPDAdjustorStateInitialized.class)
-				.name("StateInitializationHandler")
-				.handler(new StateInitializationHandler()).build());
+				.name("StateInitializationHandler").handler(new StateInitializationHandler()).build());
 	}
-
 
 	/**
 	 * Initializes the filter chain.
@@ -87,17 +82,16 @@ public final class SPDAdjustorContext {
 
 		this.filterChain.add(triggerChecker);
 
+		scalingPolicy.getTargetGroup().getTargetConstraints().stream()
+				.filter(constraint -> constraint instanceof final ThrashingConstraint thrashingConstraint)
+				.map(constraint -> (ThrashingConstraint) constraint).forEach(constraint -> this.filterChain
+						.add(AbstractConstraintFilter.createAbstractConstraintFilter(constraint)));
 
-		scalingPolicy.getTargetGroup().getTargetConstraints().stream().filter(constraint -> constraint instanceof final ThrashingConstraint thrashingConstraint).map(constraint -> (ThrashingConstraint) constraint).forEach(constraint ->
-		this.filterChain.add(AbstractConstraintFilter.createAbstractConstraintFilter(constraint)));
-
-		scalingPolicy.getPolicyConstraints().forEach(constraint ->
-		this.filterChain.add(AbstractConstraintFilter.createAbstractConstraintFilter(constraint))
-				);
+		scalingPolicy.getPolicyConstraints().forEach(constraint -> this.filterChain
+				.add(AbstractConstraintFilter.createAbstractConstraintFilter(constraint)));
 
 		this.filterChain.add(new Adjustor(this.scalingPolicy));
 	}
-
 
 	public FilterChain getFilterChain() {
 		return filterChain;
@@ -166,6 +160,13 @@ public final class SPDAdjustorContext {
 	/**
 	 * Initialize the {@code state} of this adjustor context according to values
 	 * provided by the {@link SPDAdjustorStateInitialized} event.
+	 * 
+	 * Beware: For scaling policies that reference the same target group, the
+	 * resulting SPD adjustor context have a shared target group state. To avoid
+	 * this, only the initialisation event for the last applied policy hold changes
+	 * for the target group. However, this breaks in case of simulation time trigger
+	 * base policies, because they get deactivated once their trigger time is in the
+	 * past.
 	 *
 	 * This subscriber is not part of the filter chain.
 	 */
@@ -174,16 +175,23 @@ public final class SPDAdjustorContext {
 		@Override
 		public Result<?> acceptEvent(final SPDAdjustorStateInitialized event) throws Exception {
 
-			if (!event.getStateValues().scalingPolicyId().equals(state.getScalingPolicy().getId())) {
-				return Result.empty();
-			}
+			if (event.getStateValues().scalingPolicyId().equals(state.getScalingPolicy().getId())) {
+				state.setCoolDownEnd(event.getStateValues().coolDownEnd());
+				state.setLatestAdjustmentAtSimulationTime(event.getStateValues().latestAdjustmentAtSimulationTime());
+				state.setNumberOfScalesInCooldown(event.getStateValues().numberOfScalesInCooldown());
 
-			state.setCoolDownEnd(event.getStateValues().coolDownEnd());
-			state.setLatestAdjustmentAtSimulationTime(event.getStateValues().latestAdjustmentAtSimulationTime());
-			state.setNumberOfScalesInCooldown(event.getStateValues().numberOfScalesInCooldown());
+				while (state.numberOfScales() < event.getStateValues().numberScales()) {
+					state.incrementNumberScales();
+				}
 
-			while (state.numberOfScales() < event.getStateValues().numberScales()) {
-				state.incrementNumberScales();
+				// TargetGroupState must be updated only once, because it is shared.
+				for (int i = 0; i < event.getStateValues().enactedPolicies().size(); i++) {
+
+					double enactmentTime = event.getStateValues().enactmentTimeOfPolicies().get(i);
+					ScalingPolicy policy = event.getStateValues().enactedPolicies().get(i);
+
+					state.getTargetGroupState().addEnactedPolicy(enactmentTime, policy);
+				}
 			}
 
 			return Result.empty();
