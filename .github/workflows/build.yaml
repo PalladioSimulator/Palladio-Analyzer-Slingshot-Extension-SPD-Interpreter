@@ -9,7 +9,7 @@ jobs:
       use-display-output: true
       no-caching: true
       runner-label: ubuntu-latest
-      deploy-updatesite: 'releng/org.palladiosimulator.slingshot.extension.spd.interpreter.updatesite/target/repository'
+      deploy-updatesite: 'releng/org.palladiosimulator.analyzer.slingshot.behavior.spd.updatesite/target/repository'
     secrets:
       SERVER_SSH_KEY: ${{ secrets.DEPLOYMENT_SERVER_SSH_KEY }}
       REMOTE_HOST: ${{ secrets.DEPLOYMENT_REMOTE_HOST }}
