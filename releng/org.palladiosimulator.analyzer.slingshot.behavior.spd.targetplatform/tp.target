@@ -43,5 +43,10 @@
 		<repository location="https://updatesite.palladio-simulator.com/palladio-addons-spd-metamodel/nightly/"/>
 		<unit id="org.palladiosimulator.spd.feature.feature.group" version="0.0.0"/>
 	</location>
+	</location>
+	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+		<repository location="https://updatesite.palladio-simulator.com/palladio-analyzer-slingshot-extension-monitoring/nightly/"/>
+		<unit id="org.palladiosimulator.analyzer.slingshot.extension.monitoring.feature.feature.group" version="0.0.0"/>
+	</location>
 </locations>
 </target>
