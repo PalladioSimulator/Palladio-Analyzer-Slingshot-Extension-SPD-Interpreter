@@ -99,9 +99,14 @@ public class SpdAdjustmentBehavior implements SimulationBehaviorExtension {
 			final List<ResourceContainer> deletedResourceContainers = new ArrayList<>(oldContainers);
 			deletedResourceContainers.removeAll(environment.getResourceContainer_ResourceEnvironment());
 
-
+			/*
+			 * Calculate new and deleted allocation contexts for tracking.
+			 */
 			final List<AllocationContext> newAllocationContexts =  new ArrayList<>(allocation.getAllocationContexts_Allocation());
 			newAllocationContexts.removeAll(oldAllocationContexts);
+
+			final List<AllocationContext> deletedAllocationContexts = new ArrayList<>(oldAllocationContexts);
+			deletedAllocationContexts.removeAll(allocation.getAllocationContexts_Allocation());
 
 
 			final List<ModelChange<?>> changes = new ArrayList<>();
@@ -109,12 +114,19 @@ public class SpdAdjustmentBehavior implements SimulationBehaviorExtension {
 
 
 			changes.add(ResourceEnvironmentChange.builder()
-					.resourceEnvironment(environment).simulationTime(event.time()).oldResourceContainers(oldContainers)
-					.newResourceContainers(newResourceContainers).deletedResourceContainers(deletedResourceContainers)
+					.resourceEnvironment(environment).simulationTime(event.time())
+					.oldResourceContainers(oldContainers)
+					.newResourceContainers(newResourceContainers)
+					.deletedResourceContainers(deletedResourceContainers)
 					.build());
 
 
-			changes.add(AllocationChange.builder().allocation(allocation).newAllocationContexts(newAllocationContexts).build());
+			changes.add(AllocationChange.builder()
+					.allocation(allocation).simulationTime(event.time())
+					.oldAllocationContexts(oldAllocationContexts)
+					.newAllocationContexts(newAllocationContexts)
+					.deletedAllocationContexts(deletedAllocationContexts)
+					.build());
 
 
 			changes.addAll(this.createMonitors(newResourceContainers, event.time()));
