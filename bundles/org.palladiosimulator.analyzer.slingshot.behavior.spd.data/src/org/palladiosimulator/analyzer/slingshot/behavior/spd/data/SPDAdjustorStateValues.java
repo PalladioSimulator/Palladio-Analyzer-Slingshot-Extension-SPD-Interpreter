@@ -11,7 +11,7 @@ import org.palladiosimulator.spd.ScalingPolicy;
  * This is a distinct data type, as this is itself not a state, but only carries
  * the values to be set in some other state.
  *
- * @author Sarah Stieß
+ * @author Sophie Stieß
  *
  */
 public record SPDAdjustorStateValues(ScalingPolicy scalingPolicy, double latestAdjustmentAtSimulationTime, int numberScales,
