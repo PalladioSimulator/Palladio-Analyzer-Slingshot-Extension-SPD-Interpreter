@@ -11,7 +11,7 @@
 	<packaging>pom</packaging>
 	
 	<modules>
-		<!-- insert feature folders here -->
+		<module>org.palladiosimulator.analyzer.slingshot.extension.spd.interpreter</module>
 	</modules>
 	
 </project>
