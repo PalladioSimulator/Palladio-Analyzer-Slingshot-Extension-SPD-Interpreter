@@ -1,4 +1,4 @@
-package org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entities;
+package org.palladiosimulator.analyzer.slingshot.behavior.spd.data;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -1,5 +1,6 @@
 package org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entities;
 
+import org.palladiosimulator.analyzer.slingshot.behavior.spd.data.SPDAdjustorState;
 import org.palladiosimulator.analyzer.slingshot.common.events.DESEvent;
 
 /**

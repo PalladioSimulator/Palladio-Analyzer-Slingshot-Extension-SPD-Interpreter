@@ -3,9 +3,9 @@
  */
 package org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entity.constraint;
 
+import org.palladiosimulator.analyzer.slingshot.behavior.spd.data.TargetGroupState;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entities.FilterObjectWrapper;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entities.FilterResult;
-import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entities.TargetGroupState;
 import org.palladiosimulator.spd.ScalingPolicy;
 import org.palladiosimulator.spd.adjustments.AbsoluteAdjustment;
 import org.palladiosimulator.spd.adjustments.AdjustmentType;

@@ -3,14 +3,16 @@ package org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.palladiosimulator.analyzer.slingshot.behavior.spd.data.SPDAdjustorStateRegistered;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.data.SpdBasedEvent;
+import org.palladiosimulator.analyzer.slingshot.behavior.spd.data.TargetGroupState;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entities.FilterChain;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entities.SPDAdjustorContext;
-import org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entities.TargetGroupState;
 import org.palladiosimulator.analyzer.slingshot.common.events.DESEvent;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.Subscriber;
 import org.palladiosimulator.spd.SPD;
@@ -52,9 +54,14 @@ class SpdInterpreter extends SpdSwitch<SpdInterpreter.InterpretationResult> {
 		}
 
 		final ScalingTriggerInterpreter.InterpretationResult intrResult = (new ScalingTriggerInterpreter(policy)).doSwitch(policy.getScalingTrigger());
+		
+		final SPDAdjustorContext context = new SPDAdjustorContext(policy, intrResult.getTriggerChecker(), intrResult.getEventsToListen(), targetGroupStates.get(policy.getTargetGroup()));
+		final Collection<SpdBasedEvent> events = new HashSet<>(intrResult.getEventsToSchedule());
+		events.add(new SPDAdjustorStateRegistered(context.getState()));
+		
 		return (new InterpretationResult())
-				.adjustorContext(new SPDAdjustorContext(policy, intrResult.getTriggerChecker(), intrResult.getEventsToListen(), targetGroupStates.get(policy.getTargetGroup())))
-				.eventsToSchedule(intrResult.getEventsToSchedule());
+				.adjustorContext(context)
+				.eventsToSchedule(events);
 	}
 
 	/**

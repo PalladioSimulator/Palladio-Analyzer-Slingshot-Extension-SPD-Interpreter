@@ -1,5 +1,7 @@
 package org.palladiosimulator.analyzer.slingshot.behavior.spd.interpreter.entities;
 
+import org.palladiosimulator.analyzer.slingshot.behavior.spd.data.SPDAdjustorState;
+
 public abstract class ComboundFilter extends FilterChain implements Filter {
 
 	public ComboundFilter(SPDAdjustorState state) {

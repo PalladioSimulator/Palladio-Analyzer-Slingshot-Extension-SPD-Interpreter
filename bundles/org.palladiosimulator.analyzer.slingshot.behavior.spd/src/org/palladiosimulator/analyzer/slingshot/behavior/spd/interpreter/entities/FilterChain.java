@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import org.palladiosimulator.analyzer.slingshot.behavior.spd.data.SPDAdjustorState;
 import org.palladiosimulator.analyzer.slingshot.common.events.DESEvent;
 
 /**
