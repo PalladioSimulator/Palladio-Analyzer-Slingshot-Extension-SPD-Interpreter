@@ -42,14 +42,17 @@ public final class OperationResponseTimeTriggerChecker extends TriggerChecker<Op
 
 					if (this.compareToTrigger(operationTime) == ComparatorResult.IN_ACCORDANCE) {
 						return FilterResult.success(event);
+					} else {
+						return FilterResult.disregard("Conditions for trigger " + trigger.getId() + " are not met.");
 					}
 				} else {
-					return FilterResult.disregard("The signatures do not match");
+					return FilterResult.disregard("Expected signature " +  thisSignature.getEntityName() + " but received " + referencedSignature.getEntityName());
 				}
+			} else {
+				return FilterResult.disregard("Expected measuringpoint of type " +  OperationReference.class.getSimpleName() + ", but received measuringpoint of type " + point.getClass().getSimpleName());
 			}
+		} else {
+			return FilterResult.disregard("Expected measurement made event, but received " + event.getClass().getSimpleName());
 		}
-		
-		
-		return FilterResult.disregard();
 	}
 }
