@@ -58,7 +58,7 @@ public final class ThrashingConstraintFilter extends AbstractConstraintFilter<Th
 		if(!retrieveSign(currentScalingPolicy.getAdjustmentType()).equals(retrieveSign(lastEnactedPolicy.getAdjustmentType()))
 				&& lastSimulationTime + constraint.getMinimumTimeNoThrashing() >= currentSimulationTime) {
 			// opposite signs and min time did not pass -> disregard
-			return FilterResult.disregard(event.getEventToFilter());
+			return FilterResult.disregard("Thrashing Constraint prevents this scaling Operation.");
 		}
 		return FilterResult.success(event.getEventToFilter());
 	}
