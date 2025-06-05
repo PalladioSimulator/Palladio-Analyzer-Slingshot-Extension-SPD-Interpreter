@@ -28,7 +28,7 @@ public class TargetGroupChecker implements Filter {
 			if (this.measuringPointInsideTargetGroupSwitch.doSwitch(mm.getEntity().getMeasuringPoint())) {
 				return FilterResult.success(event);
 			}
-			return FilterResult.disregard("The measurement is not inside this target group");
+			return FilterResult.disregard("The measurement is not inside this target group. Expected measurement for " + targetGroup.getEntityName() + " but received measurement for " + mm.getEntity().getMeasuringPoint().getStringRepresentation());
 		}
 		if (!(event instanceof SimulationTimeReached)) {
 			return FilterResult.disregard("The event can only be checked if it is a MeasurementMade OR SimulationTimeReached at the moment.");

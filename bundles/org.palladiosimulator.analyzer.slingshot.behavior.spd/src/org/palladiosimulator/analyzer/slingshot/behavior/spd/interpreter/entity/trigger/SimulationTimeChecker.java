@@ -20,7 +20,7 @@ public final class SimulationTimeChecker extends TriggerChecker<SimulationTime> 
 	public FilterResult doProcess(final FilterObjectWrapper objectWrapper) {
 		final DESEvent event = objectWrapper.getEventToFilter();
 		if (!(event instanceof SimulationTimeReached)) {
-			return FilterResult.disregard("");
+			return FilterResult.disregard("Expected simulation time reached event, but received" + event.getClass().getSimpleName());
 		}
 		
 		final SimulationTimeReached simulationTimeReached = (SimulationTimeReached) event;
