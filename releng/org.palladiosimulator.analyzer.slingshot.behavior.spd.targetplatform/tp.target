@@ -22,16 +22,16 @@
 			<unit id="org.objenesis" version="0.0.0"/>
 		</location>
 		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="false" type="InstallableUnit">
-			<repository location="https://updatesite.palladio-simulator.com/palladio-analyzer-slingshot/releases/5.2.2/"/>
+			<repository location="https://updatesite.palladio-simulator.com/palladio-analyzer-slingshot/nightly/"/>
 			<unit id="org.palladiosimulator.analyzer.slingshot.feature.feature.group" version="0.0.0"/>
 			<unit id="org.palladiosimulator.analyzer.slingshot.ui.feature.feature.group" version="0.0.0"/>
 		</location>
 		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="false" type="InstallableUnit">
-			<repository location="https://updatesite.palladio-simulator.com/palladio-addons-spd-metamodel/releases/5.2.2/"/>
+			<repository location="https://updatesite.palladio-simulator.com/palladio-addons-spd-metamodel/nightly/"/>
 			<unit id="org.palladiosimulator.spd.feature.feature.group" version="0.0.0"/>
 		</location>
 		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="false" type="InstallableUnit">
-			<repository location="https://updatesite.palladio-simulator.com/palladio-analyzer-slingshot-extension-monitoring/releases/5.2.2/"/>
+			<repository location="https://updatesite.palladio-simulator.com/palladio-analyzer-slingshot-extension-monitoring/nightly/"/>
 			<unit id="org.palladiosimulator.analyzer.slingshot.extension.monitoring.feature.feature.group" version="0.0.0"/>
 		</location>
 	</locations>
