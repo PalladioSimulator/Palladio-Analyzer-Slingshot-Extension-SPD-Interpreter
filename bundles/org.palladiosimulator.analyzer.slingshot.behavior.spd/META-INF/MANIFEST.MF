@@ -13,4 +13,5 @@ Require-Bundle: org.palladiosimulator.analyzer.slingshot.core,
  org.palladiosimulator.analyzer.slingshot.ui.events,
  org.palladiosimulator.analyzer.slingshot.workflow.events,
  org.palladiosimulator.pcm.edp2.measuringpoint,
- org.palladiosimulator.spd.semantic
+ org.palladiosimulator.spd.semantic,
+ com.google.guava
