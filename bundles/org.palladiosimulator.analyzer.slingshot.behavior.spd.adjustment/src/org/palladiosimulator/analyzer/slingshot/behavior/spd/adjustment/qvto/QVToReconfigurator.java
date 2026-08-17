@@ -1,6 +1,6 @@
 package org.palladiosimulator.analyzer.slingshot.behavior.spd.adjustment.qvto;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.adjustment.qvto.util.ModelTransformationCache;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.adjustment.qvto.util.QVToModelCache;
 

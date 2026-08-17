@@ -1,6 +1,6 @@
 package org.palladiosimulator.analyzer.slingshot.behavior.spd.adjustment;
 
-import javax.inject.Named;
+import jakarta.inject.Named;
 
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.adjustment.qvto.QVToLoader;
 import org.palladiosimulator.analyzer.slingshot.behavior.spd.adjustment.qvto.QVToModelTransformation;
