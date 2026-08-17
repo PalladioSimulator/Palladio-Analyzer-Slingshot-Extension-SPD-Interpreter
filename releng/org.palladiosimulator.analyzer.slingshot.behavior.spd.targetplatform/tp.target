@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde version="3.8"?><target name="org.palladiosimulator.analyzer.slingshot.behavior.spd" sequenceNumber="2">
 	<locations>
-		<location type="Target" uri="mvn:org.palladiosimulator:palladio-target-platforms:0.1.0:target:palladio-2023-03"/>
+		<location type="Target" uri="mvn:org.palladiosimulator:palladio-target-platforms:6.0.0-SNAPSHOT:target:palladio-2025-12"/>
 		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="false" type="InstallableUnit">
-			<repository location="https://updatesite.palladio-simulator.com/palladio-build-updatesite/releases/latest/"/>
-			<unit id="ca.umontreal.iro.ssj.feature.feature.group" version="3.3.1"/>
+			<repository location="https://updatesite.palladio-simulator.com/palladio-build-updatesite/nightly/"/>
+			<unit id="ca.umontreal.iro.ssj.feature.feature.group" version="0.0.0"/>
 			<unit id="de.uka.ipd.sdq.workflow.feature.mdsd.feature.group" version="0.0.0"/>
 			<unit id="org.palladiosimulator.edp2.ui.feature.feature.group" version="0.0.0"/>
 			<unit id="org.palladiosimulator.pcm.edp2.measuringpoint.feature.feature.group" version="0.0.0"/>
@@ -13,13 +13,8 @@
 			<unit id="org.palladiosimulator.monitorrepository.feature.feature.group" version="0.0.0"/>
 		</location>
 		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="false" type="InstallableUnit">
-			<repository location="https://download.eclipse.org/tools/orbit/downloads/2023-03/"/>
+			<repository location="https://download.eclipse.org/tools/orbit/simrel/orbit-aggregation/release/4.38.0/"/>
 			<unit id="org.reactivestreams" version="0.0.0"/>
-			<unit id="net.bytebuddy.byte-buddy" version="0.0.0"/>
-			<unit id="net.bytebuddy.byte-buddy-agent" version="0.0.0"/>
-			<unit id="org.hamcrest.library" version="0.0.0"/>
-			<unit id="org.mockito.mockito-core" version="0.0.0"/>
-			<unit id="org.objenesis" version="0.0.0"/>
 		</location>
 		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="false" type="InstallableUnit">
 			<repository location="https://updatesite.palladio-simulator.com/palladio-analyzer-slingshot/nightly/"/>
